@@ -71,7 +71,8 @@ class RealtimeBuffer
   {
     // 检查数据当前是否正在写入（已锁定）
     std::unique_lock<std::mutex> guard(mutex_, std::try_to_lock);
-    if (guard.owns_lock())
+    if (guard.owns_lock())      //是否拥有一个锁定的互斥体
+                    //truec如果*this拥有一个关联的互斥体，并拥有它的共享所有权
     {
       // swap pointers
       if (new_data_available_)
