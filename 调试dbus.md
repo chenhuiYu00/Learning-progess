@@ -14,6 +14,7 @@
 
 ``` bash
 ssh dynamicx@192.168.1.196                        //连接到hero机器人,密码dynamicx
+												//139 全向轮  112 哨兵
 ```
 
 ``` bash
