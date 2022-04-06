@@ -148,6 +148,7 @@ void Referee::pack(uint8_t* tx_buffer, uint8_t* data, int cmd_id, int len) const
     //置空tx_buffer数据
     //设置头帧：起始id 0xA5，数据长度 len
     //数据拷贝
+    //有crc校验
 ```
 
 
@@ -176,7 +177,7 @@ void appendCRC16CheckSum(uint8_t* pch_message, uint32_t dw_length)
 
 ```c++
 void SuperCapacitor::read(const std::vector<uint8_t>& rx_buffer)
-    //重置receieve，ping_pong的缓冲数据
+    //重置receieve（接收缓存），ping_pong（往返交换缓存）的缓冲数据
     //拷贝rx_buffer数据
     //规范底盘功率(0~120)
     //检查数据是否实时
@@ -198,13 +199,13 @@ void SuperCapacitor::dtpReceivedCallBack(unsigned char receive_byte)
     //扫描数据帧，获取起始，结尾的位置
     //从缓存区拷贝数据
     //获取pid
-    //调用回调函数检查receiveCallBack()
+    //调用回调函数检查receiveCallBack()referee_pub_
 ```
 
 
 
 
-### 清空缓冲区
+### 清空缓冲区referee_pub_
 
 ```c++
 void clearBuffer()
@@ -296,6 +297,8 @@ void UiBase::add()
 ```c++
 TriggerChangeUi::TriggerChangeUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "trigger_change")
     //不同的机器人类型设置不同触发器
+    //graph匹配到chassis：如果是工程机器人，发送RAW，其他机器人发送FOLLOW
+    //graph匹配到target：发送armor，红方装甲板为青色，蓝方粉色
     //什么也没有返回0
     
 void TriggerChangeUi::update(const std::string &graph_name, uint8_t main_mode, bool main_flag,uint8_t sub_mode, bool sub_flag) 
@@ -303,6 +306,7 @@ void TriggerChangeUi::update(const std::string &graph_name, uint8_t main_mode, b
     
 void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_t main_mode,bool main_flag, uint8_t sub_mode, bool sub_flag)
     //更新设置，匹配chassis，target，card，sentry，exposure
+    //匹配到的目标根据mode，flag的不同配置不同颜色
     //匹配完成后展示相应数据
     
 std::string TriggerChangeUi::getChassisState(uint8_t mode)
@@ -310,14 +314,15 @@ std::string TriggerChangeUi::getChassisState(uint8_t mode)
     
 std::string TriggerChangeUi::getTargetState(uint8_t target, uint8_t armor_target)
     //红蓝方装甲板目标
+    //装甲目标等级：buff armor_all(所有机器人) armor_base(前哨) eject(弹出) all base
     
 std::string TriggerChangeUi::getExposureState(uint8_t level)
-    //设置触发器顺序发布的等级
+    //设置触发器顺序发布的等级0-4
 ```
 
 
 
-#### FixedU
+#### FixedUi
 
 锁定
 
@@ -326,7 +331,7 @@ void FixedUi::update()
     //更新并展示
     
 int FixedUi::getShootSpeedIndex()
-    //裁判系统对非英雄机器人的速度限制
+    //裁判系统对非英雄机器人的17mm弹丸的初速度匹配
 ```
 
 

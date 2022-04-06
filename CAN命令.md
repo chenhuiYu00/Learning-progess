@@ -11,7 +11,7 @@
 ### 操作流程
 
 ```bash
-sudo ip link set can0 type can bitrate 10000   #设置can0波特率  can0和can1都需要初始化
+sudo ip link set can0 up type can bitrate 1000000   #设置can0波特率  can0和can1都需要初始化
 ```
 ```bash
 candump can0                              #打开另一个终端，接受can0数据

@@ -1,4 +1,8 @@
-# 调试dbus
+# 调试
+
+
+
+## DBUS
 
 > dbus是遥控器，与接收机连接后进而连接串口（NUC）通信，配置中见到的乱码是dbus发送给接收机的，接收机进而发送给串口
 
@@ -26,6 +30,18 @@ sudo minicom -s                                   //打开配置工具
 完成，接着观察是否有接受乱码输出。
 
 
+
+## REFEREE
+
+上传referee，注意删去rm_gazebo
+
+
+
+修改referee机器人类型
+
+```bash
+rosparam set /rm_referee/robot_type hero
+```
 
 
 
