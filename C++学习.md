@@ -2,7 +2,7 @@
 
 
 
-### explicit 关键词
+## explicit 关键词
 
 **explicit关键字的作用就是防止类构造函数的隐式自动转换.**
 
@@ -23,3 +23,37 @@ CxString string2 = 10;    // CxString是类名，定义类的时候先隐式CxSt
     explicit CxString(int age, int size = 0)  
 ```
 
+
+
+
+
+## std::map
+
+> STL是标准C++系统的一组模板类，使用STL模板类最大的好处就是在各种C++编译器上都通用。
+>
+>     在STL模板类中，用于线性数据存储管理的类主要有vector, list, map 等等。
+
+
+
+使用map对象首先要包括头文件,包含语句中必须加入如下包含声明
+
+```c++
+#include <map>
+std:map<int, CString> enumMap;
+```
+
+注意，STL头文件没有扩展名.h
+
+包括头文件后就可以定义和使用map对象了，map对象是模板类，需要关键字和存储对象两个模板参数，这样就定义了一个用int作为关键字检索CString条目的map对象，std表示命名空间，map对象在std名字空间中，为了方便，在这里我仍然使用了CString类，其实应该使用标准C++的std::string类，我们对模板类进行一下类型定义，这样用的方便，当然，不定义也可以，代码如下：
+
+```c++
+enumMap[1] = "One";
+enumMap[2] = "Two";
+//.....
+enumMap[1] = "One Edit";
+//或者insert方法
+enumMap.insert(make_pair(1,"One"));
+ 
+//返回map中目前存储条目的总数用size()方法：
+int nSize = enumMap.size();
+```
