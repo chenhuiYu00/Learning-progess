@@ -111,3 +111,243 @@
 
 
 载入完成后，ros将会多出cmd_vel话题
+
+
+
+## 各传感器的插件
+
+> [使用](https://blog.csdn.net/weixin_43455581/article/details/106378239?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-0.pc_relevant_paycolumn_v3&spm=1001.2101.3001.4242.1&utm_relevant_index=3)
+
+
+
+#### 差速驱动插件
+
+> <gazebo>
+>   <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+>     <alwaysOn>true</alwaysOn>
+>     <updateRate>${update_rate}</updateRate>
+>     <leftJoint>${base_link_right_wheel_joint}</leftJoint>
+>     <rightJoint>${base_link_left_wheel_joint}</rightJoint>
+>     <wheelSeparation>0.100</wheelSeparation>
+>     <wheelDiameter>0.040</wheelDiameter>
+>     <torque>20</torque>
+>     <commandTopic>cmd_vel</commandTopic>
+>     <odometryTopic>odom</odometryTopic>
+>     <odometryFrame>odom</odometryFrame>
+>     <robotBaseFrame>${base_link}</robotBaseFrame>
+>   </plugin>
+> </gazebo>
+
+
+
+#### 滑动转向驱动
+
+> <gazebo>
+>  <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+>     <alwaysOn>true</alwaysOn>
+>     <updateRate>${update_rate}</updateRate>
+>     <leftFrontJoint>${base_link_wheel1_joint}</leftFrontJoint>
+>     <rightFrontJoint>${base_link_wheel2_joint}</rightFrontJoint>
+>    <leftRearJoint>${base_link_wheel3_joint}</leftRearJoint>
+>     <rightRearJoint>${base_link_wheel4_joint}</rightRearJoint> 
+>     <wheelSeparation>0.100</wheelSeparation> 
+>     <wheelDiameter>0.040</wheelDiameter>
+>     <torque>20</torque>
+>     <commandTopic>cmd_vel</commandTopic>
+>     <odometryTopic>odom</odometryTopic>
+>     <odometryFrame>odom</odometryFrame>
+>     <robotBaseFrame>${base_link}</robotBaseFrame>
+>     <broadcastTF>1</broadcastTF>
+>   </plugin>
+> </gazebo>
+
+
+
+#### 单目相机插件
+
+> <!-- camera -->
+>       <gazebo reference="${camera_link}">
+>         <sensor type="camera" name="camera1">
+>           <update_rate>${update_rate}</update_rate>
+>           <camera name="head">
+>             <horizontal_fov>1.3962634</horizontal_fov>
+>             <image>
+>               <width>800</width>
+>               <height>800</height>
+>               <format>R8G8B8</format>
+>             </image>
+>             <clip>
+>               <near>0.02</near>
+>               <far>300</far>
+>             </clip>
+>             <noise>
+>               <type>gaussian</type>
+>               <!-- Noise is sampled independently per pixel on each frame.
+>                    That pixel's noise value is added to each of its color
+>                    channels, which at that point lie in the range [0,1]. -->
+>               <mean>0.0</mean>
+>               <stddev>0.007</stddev>
+>             </noise>
+>           </camera>
+>           <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+>            <alwaysOn>true</alwaysOn>
+>             <updateRate>0.0</updateRate>
+>             <cameraName>camera</cameraName>
+>             <imageTopicName>image</imageTopicName>
+>             <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+>             <frameName>${camera_link}</frameName>
+>             <hackBaseline>0.07</hackBaseline>
+>             <distortionK1>0.0</distortionK1>
+>             <distortionK2>0.0</distortionK2>
+>             <distortionK3>0.0</distortionK3>
+>             <distortionT1>0.0</distortionT1>
+>             <distortionT2>0.0</distortionT2>
+>           </plugin>
+>         </sensor>
+>       </gazebo>
+
+
+
+#### RGB-D相机插件
+
+> 
+>
+>     <gazebo reference="${camera_link}">
+>      <sensor type="depth" name="camera1">
+>          <always_on>1</always_on>
+>          <visualize>true</visualize>             
+>          <camera>
+>              <horizontal_fov>1.047</horizontal_fov>  
+>              <image>
+>                  <width>640</width>
+>                  <height>480</height>
+>                  <format>R8G8B8</format>
+>              </image>
+>              <depth_camera>     
+>          </depth_camera>
+>          <clip>
+>              <near>0.1</near>
+>              <far>100</far>
+>          </clip>
+>      </camera>
+>           <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+>           <alwaysOn>true</alwaysOn>
+>              <updateRate>10.0</updateRate>
+>              <cameraName>camera</cameraName>
+>              <frameName>${camera_link}</frameName>                   
+>          <imageTopicName>rgb/image_raw</imageTopicName>
+>          <depthImageTopicName>depth/image_raw</depthImageTopicName>
+>          <pointCloudTopicName>depth/points</pointCloudTopicName>
+>          <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>              
+>             <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>            
+>             <pointCloudCutoff>0.4</pointCloudCutoff>                
+>                 <hackBaseline>0.07</hackBaseline>
+>                 <distortionK1>0.0</distortionK1>
+>                 <distortionK2>0.0</distortionK2>
+>                 <distortionK3>0.0</distortionK3>
+>                 <distortionT1>0.0</distortionT1>
+>                 <distortionT2>0.0</distortionT2>
+>             <CxPrime>0.0</CxPrime>
+>             <Cx>0.0</Cx>
+>             <Cy>0.0</Cy>
+>             <focalLength>0.0</focalLength>
+>             </plugin>
+>     </sensor>
+>     </gazebo>
+
+
+
+#### 激光雷达插件
+
+> <gazebo reference="${hokuyo_link}">
+>     <sensor type="ray" name="head_hokuyo_sensor">
+>       <pose>0 0 0 0 0 0</pose>
+>       <visualize>false</visualize>
+>       <update_rate>40</update_rate>
+>       <ray>
+>         <scan>
+>           <horizontal>
+>             <samples>720</samples>
+>             <resolution>1</resolution>
+>             <min_angle>-1.570796</min_angle>
+>             <max_angle>1.570796</max_angle>
+>           </horizontal>
+>         </scan>
+>         <range>
+>           <min>0.10</min>
+>           <max>30.0</max>
+>           <resolution>0.01</resolution>
+>         </range>
+>         <noise>
+>           <type>gaussian</type>
+>           <!-- Noise parameters based on published spec for Hokuyo laser
+>                achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+>                stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+>                reading. -->
+>           <mean>0.0</mean>
+>           <stddev>0.01</stddev>
+>         </noise>
+>       </ray>
+>       <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+>         <topicName>/laser/scan</topicName>
+>         <frameName>${hokuyo_link}</frameName>
+>       </plugin>
+>     </sensor>
+>   </gazebo>
+
+
+
+#### 平衡车
+
+>   <gazebo>
+>       <plugin name="differential_drive_controller" 
+>               filename="libgazebo_ros_diff_drive.so">
+>           <rosDebugLevel>Debug</rosDebugLevel>
+>           <publishWheelTF>true</publishWheelTF>
+>           <robotNamespace>/</robotNamespace>
+>           <publishTf>1</publishTf>
+>           <publishWheelJointState>true</publishWheelJointState>
+>           <alwaysOn>true</alwaysOn>
+>           <updateRate>100.0</updateRate>
+>           <legacyMode>true</legacyMode>
+>           <leftJoint>left_wheel_joint</leftJoint>
+>           <rightJoint>right_wheel_joint</rightJoint>
+>           <wheelSeparation>0.2</wheelSeparation>
+>           <wheelDiameter>0.6</wheelDiameter>
+>           <broadcastTF>1</broadcastTF>
+>           <wheelTorque>30</wheelTorque>
+>           <wheelAcceleration>1.8</wheelAcceleration>
+>           <commandTopic>cmd_vel</commandTopic>
+>           <odometryFrame>odom</odometryFrame> 
+>           <odometryTopic>odom</odometryTopic> 
+>           <robotBaseFrame>base_footprint</robotBaseFrame>
+>       </plugin>
+>   </gazebo> 
+
+
+
+#### 四轮车
+
+>   <gazebo>
+>         <plugin name="differential_drive_controller" filename="/opt/ros/noetic/lib/libgazebo_ros_skid_steer_drive.so">
+>             <robotNamespace>/</robotNamespace>
+>             <alwaysOn>true</alwaysOn>
+>             <updateRate>50.0</updateRate>
+>             <leftFrontJoint>car_base_wheel2</leftFrontJoint>
+>             <rightFrontJoint>car_base_wheel4</rightFrontJoint>
+>             <leftRearJoint>car_base_wheel1</leftRearJoint>
+>             <rightRearJoint>car_base_wheel3</rightRearJoint>
+>             <wheelSeparation>0.8</wheelSeparation>
+>             <wheelDiameter>0.2</wheelDiameter>
+>             <torque>1.0</torque>
+>             <commandTopic>cmd_vel</commandTopic>
+>             <odometryTopic>odom</odometryTopic>
+>             <odometryFrame>odom</odometryFrame>
+>             <robotBaseFrame>base_link</robotBaseFrame>
+>             <broadcastTF>1</broadcastTF>
+>             <publishWheelTF>true</publishWheelTF>
+>             <publishWheelJointState>true</publishWheelJointState>
+>             <legecyMode>false</legecyMode>
+>             <wheelAcceleration>1</wheelAcceleration>
+>         </plugin>
+>   </gazebo>

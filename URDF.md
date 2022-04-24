@@ -48,6 +48,135 @@ https://blog.csdn.net/wubaobao1993/article/details/80947968
 ## 宏定义文件xacro
 
 > 经常需要重复使用的link（例如轮子），可以使用xacro在保证代码完整性的同时提高效率和简化代码量
+>
+> http://wiki.ros.org/urdf/XML/link
+
+
+
+![](http://wiki.ros.org/urdf/XML/link?action=AttachFile&do=get&target=inertial.png)
+
+
+
+
+
+### geometry标签
+
+>  **<geometry>** *(required)*
+>
+> > **<box>** 
+> >
+> > - **size** attribute contains the three side lengths of the box. The origin of the box is in its center. 
+> >
+> > **<cylinder>** 
+> >
+> > - Specify the **radius** and **length**. The origin of the cylinder is in its center. ![cylinder_coordinates.png](http://wiki.ros.org/urdf/XML/link?action=AttachFile&do=get&target=cylinder_coordinates.png) 
+> >
+> > **<sphere>** 
+> >
+> > - Specify the **radius**. The origin of the sphere is in its center. 
+> >
+> > **<mesh>** 
+> >
+> > - 自定义模型文件，它必须是本地文件。在文件名前面加package://<packagename>/<path>
+> > - 例 <mesh filename="package://robot_description/meshes/base_link.DAE"/>
+
+
+
+### visual标签
+
+> **<visual>** *(optional)*
+>
+> > **name** *(optional)* 
+> >
+> > - Specifies a name for a part of a link's geometry. This is useful to be able to  refer to specific bits of the geometry of a link. 
+> >
+> > **<origin>** *(optional: defaults to identity if not specified)* 
+> >
+> > - 说明视觉元素相对于关联物块位置
+> >
+> >   
+> >
+> >   **xyz** *(optional: defaults to zero vector)* 
+> >
+> >   - 表示**x**、**y**、**z**偏移量。
+> >
+> >   **rpy** *(optional: defaults to identity if not specified)* 
+> >
+> >   -  以弧度表示固定轴滚动、俯仰和偏航角度。 
+> >
+> > **<geometry>** *(required)* 
+> >
+> > 可以通过xacro:macro预先定义该标签
+> >
+> > - The shape of the visual object. This can be *one* of the following: 
+> >
+> > - **<box>** 
+> >
+> >   - **size** attribute contains the three side lengths of the box. The origin of the box is in its center. 
+> >
+> >   **<cylinder>** 
+> >
+> >   - Specify the **radius** and **length**. The origin of the cylinder is in its center. ![cylinder_coordinates.png](http://wiki.ros.org/urdf/XML/link?action=AttachFile&do=get&target=cylinder_coordinates.png) 
+> >
+> >   **<sphere>** 
+> >
+> >   - Specify the **radius**. The origin of the sphere is in its center. 
+> >
+> >   **<mesh>** 
+> >
+> >   - -------
+> >
+> > **<material>** *(optional)* 
+> >
+> > - The material of the visual element. It is allowed to specify a material  element outside of the 'link' object, in the top level 'robot' element.  From within a link element you can then reference the material by name. 
+> >
+> > - **name** name of the material 
+> >
+> > - **<color>** *(optional)* 
+> >
+> >   - **rgba** The color of a material specified by set of four numbers representing red/green/blue/alpha, each in the range of [0,1]. 
+> >
+> >   **<texture>** *(optional)* 
+> >
+> >   - The texture of a material is specified by a **filename**
+
+
+
+
+
+### collision标签
+
+link的碰撞属性
+
+> **<collision>** *(optional)*
+>
+> > **name** *(optional)* 
+> >
+> > - Specifies a name for a part of a link's geometry. This is useful to be able to  refer to specific bits of the geometry of a link. 
+> >
+> > **<origin>** *(optional: defaults to identity if not specified)* 
+> >
+> > - 该碰撞元素的参考系
+> >
+> >   
+> >
+> >   **xyz** *(optional: defaults to zero vector)* 
+> >
+> >   - Represents the **x**, **y**, **z** offset. 
+> >
+> >   **rpy** *(optional: defaults to identity if not specified)* 
+> >
+> >   - Represents the fixed axis roll, pitch and yaw angles in radians. 
+> >
+> > **<geometry>** 
+> >
+> > - See the geometry description in the above visual element. 
+
+
+
+
+
+
 
 ``` c++
 举例
@@ -309,3 +438,57 @@ gazebo能够添加更多的关于物件的属性，例如表面摩擦系数
 </robot>
 ```
 
+
+
+
+
+
+
+# 附录
+
+## 常见颜色RGBA表
+
+**RGBA**是代表**R**ed（红色）**G**reen（[绿色](https://baike.baidu.com/item/绿色)）**B**lue（[蓝色](https://baike.baidu.com/item/蓝色)）和**A**lpha的色彩空间，**alpha通道**一般用作不透明度参数。
+
+RGB颜色格式：#RRGGBB
+
+(两个R代表了红色光，两个G代表了绿色光，两个B代表了蓝色光,RGB均用16进制数字表示) ,如#0000ff代表了0份红色光，0份绿色光和255份蓝色光。
+
+> RGB常用颜色编码是24bit对齐R,G,B各元素各占8位，一个像素点具有R,G,B三个分量
+>
+> 白色RGB分别为255，255，255
+>
+> 青色RGB分别为0，255，255
+>
+> 黄色RGB分别为255，255，0
+>
+> 深红色RGB分别为255，0，255
+>
+> 蓝色RGB分别为0，0，255
+>
+> 绿色RGB分别为0，255，0
+>
+> 红色RGB分别为255，0，0
+>
+> 黑色RGB分别为0，0，0
+>
+
+
+
+
+
+> <material name="Black">
+> 	<color rgba="0 0 0 1"/>
+> </material>
+> <material name="Yellow">
+> 	<color rgba="255 255 0 1"/>
+> </material>
+> <material name="Green">
+> 	<color rgba="0 255 0 1"/>
+> </material>
+> <material name="Red">
+> 	<color rgba="255 0 0 1"/>
+> </material>
+> <material name="Blue">
+> 	<color rgba="0 0 255 1"/>
+> </material>
