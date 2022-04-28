@@ -263,8 +263,14 @@ void Referee::sendUi(const ros::Time& time)
   ui_queue_.pop_back();
   last_send_ = time;
 }
+```
 
 
+
+在sendUi()的pack()后，产生的tx_buffer最后通过referee_base中调用的的write()载入serial
+
+```c++
+ data_.serial_.write(data_.referee_.tx_buffer_, data_.referee_.tx_len_);
 ```
 
 
@@ -353,3 +359,43 @@ referee.h ,graph.h, ui.h都由peter写的，我修改的应该是ljq的部分
    ```
 
    
+
+
+
+
+
+
+
+## UI跟随系统
+
+> 底盘跟随云台
+
+referee_base中不断调用了run(),可以尝试将坐标写入update()。
+
+难度在于该UI是相对运动的，且需要tf坐标树转换，详情可问阵雨
+
+robotMaster论坛的哈工程
+
+
+
+### 一份将要发送的UI
+
+```c++
+referee_control = new rm_referee::ChassisGimbalShooterCoverReferee(nh);
+
+trigger_change_ui_->update()
+```
+
+
+
+
+
+### 新的理解
+
+```c++
+std::map<std::string, Graph *> graph_vector_;
+//一份图像容器，从yaml拉取所有的图像配置数据
+
+话题数据/joint_state 下的position数组，第九位也是最后一位元素即为yaw_joint相对数据，该数据在初始状态底盘为对齐云台时为0，向左转一直增，向右转一直减。转一圈数值约为6.2
+```
+
