@@ -388,6 +388,43 @@ trigger_change_ui_->update()
 
 
 
+### 需要的数据
+
+```c++
+//数据来源 joint_state_
+std_msgs/Header header
+string[] name
+float64[] position
+float64[] velocity
+float64[] effort
+```
+
+
+
+```c++
+//图像配置
+struct GraphConfig
+{
+  uint8_t graphic_id_[3];
+  uint32_t operate_type_ : 3;
+  uint32_t graphic_type_ : 3;
+  uint32_t layer_ : 4;
+  uint32_t color_ : 4;
+  uint32_t start_angle_ : 9;
+  uint32_t end_angle_ : 9;
+  uint32_t width_ : 10;
+  uint32_t start_x_ : 11;
+  uint32_t start_y_ : 11;
+  uint32_t radius_ : 10;
+  uint32_t end_x_ : 11;
+  uint32_t end_y_ : 11;
+}
+```
+
+
+
+
+
 
 
 ### 新的理解
@@ -397,5 +434,17 @@ std::map<std::string, Graph *> graph_vector_;
 //一份图像容器，从yaml拉取所有的图像配置数据
 
 话题数据/joint_state 下的position数组，第九位也是最后一位元素即为yaw_joint相对数据，该数据在初始状态底盘为对齐云台时为0，向左转一直增，向右转一直减。转一圈数值约为6.2
+    
+```
+
+```c++
+if (start_positions_.size() > 1) {
+     config_.start_x_ = 960 - 50 * sin(yaw_joint_);//50表示准星半径
+     config_.start_y_ = 540 + 50 * cos(yaw_joint_);
+    }
+if (end_positions_.size() > 1) {
+     config_.end_x_ = 960 - 100 * sin(yaw_joint_);//100-50=50表示绘制准线长度
+     config_.end_y_ = 540 + 100 * cos(yaw_joint_);
+    }
 ```
 
