@@ -379,3 +379,36 @@ void TimeChangeUi::setTemperatureData(Graph &graph)
 
 
 
+
+
+# 串口传输协议
+
+## 机器人间通信
+
+
+
+### ID说明
+> 机器人 ID：1，英雄(红)；2，工程(红)；3/4/5，步兵(红)；6，空中(红)；7，哨兵(红)；9，雷达站（红）；
+> 101，英雄(蓝)；102，工程(蓝)；103/104/105，步兵(蓝)；106，空中(蓝)；107，哨兵(蓝)； 109，雷达站
+> （蓝）。
+> 客户端 ID：0x0101 为英雄操作手客户端(红)；0x0102，工程操作手客户端((红)；0x0103/0x0104/0x0105，
+> 步兵操作手客户端(红)；0x0106，空中操作手客户端((红)； 0x0165，英雄操作手客户端(蓝)；0x0166，工
+> 程操作手客户端(蓝)；0x0167/0x0168/0x0169，步兵操作手客户端步兵(蓝)；0x016A，空中操作手客户端
+> (蓝)。
+
+### 最大带宽
+
+![img](https://i0.hdslb.com/bfs/album/14c2806e161b16c2ea195d0548f4101d85f7e188.png@1036w.webp)
+
+> ```c
+>     typedef enum {
+>         ROBOT_INTERACTIVE_CMD_MIN = 0x0200,
+>         ROBOT_INTERACTIVE_CMD_MAX = 0x02FF,
+>         CLIENT_GRAPH_DELETE_CMD = 0x0100,
+>         CLIENT_GRAPH_SINGLE_CMD = 0x0101,
+>         CLIENT_GRAPH_DOUBLE_CMD = 0x0102,
+>         CLIENT_GRAPH_FIVE_CMD = 0x0103,
+>         CLIENT_GRAPH_SEVEN_CMD = 0x0104,
+>         CLIENT_CHARACTER_CMD = 0x0110,
+>     } DataCmdId;
+> ```

@@ -366,7 +366,7 @@ referee.h ,graph.h, ui.h都由peter写的，我修改的应该是ljq的部分
 
 
 
-## UI跟随系统
+# UI跟随系统
 
 > 底盘跟随云台
 
@@ -378,7 +378,7 @@ robotMaster论坛的哈工程
 
 
 
-### 一份将要发送的UI
+## 一份将要发送的UI
 
 ```c++
 referee_control = new rm_referee::ChassisGimbalShooterCoverReferee(nh);
@@ -388,7 +388,7 @@ trigger_change_ui_->update()
 
 
 
-### 需要的数据
+## 需要的数据
 
 ```c++
 //数据来源 joint_state_
@@ -427,7 +427,7 @@ struct GraphConfig
 
 
 
-### 新的理解
+## 新的理解
 
 ```c++
 std::map<std::string, Graph *> graph_vector_;
@@ -438,6 +438,16 @@ std::map<std::string, Graph *> graph_vector_;
 ```
 
 ```c++
+  double cover_yaw_joint_ = yaw_joint_;
+  while (abs(cover_yaw_joint_) > 2 * M_PI){
+        cover_yaw_joint_ += cover_yaw_joint_>0 ? 2 * M_PI : -2 * M_PI;
+     }
+        
+  return cover_yaw_joint_;//限制yaw_joint 范围大小
+
+
+
+
 if (start_positions_.size() > 1) {
      config_.start_x_ = 960 - 50 * sin(yaw_joint_);//50表示准星半径
      config_.start_y_ = 540 + 50 * cos(yaw_joint_);
@@ -448,3 +458,97 @@ if (end_positions_.size() > 1) {
     }
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 云台操作手ui
+
+> 飞手与云台手共用ui
+>
+> 需求：能够显示当前飞镖发射架可发射的状态，有一个舱门打开的状态，显示还有多久开门的时间；
+>
+> 切换到前哨战，基地位置；发射
+
+
+
+
+
+## 可能需要的数据
+
+> ```c
+> 机器人间交互数据
+> typedef struct {
+>     uint16_t data_cmd_id_;
+>     uint16_t sender_id_;
+>     uint16_t receiver_id_;
+> } __packed InteractiveDataHeader;
+> 
+>     typedef struct {
+>         InteractiveDataHeader header_data_;
+>         uint8_t data_;
+>     } __packed InteractiveData;
+> ```
+
+> ```c
+> rm_common::DartClientCmd dart_cmd_data_{};
+> typedef struct
+> {
+>   uint8_t dart_launch_opening_status_;
+>   uint8_t dart_attack_target_;
+>   uint16_t target_change_time_;
+>   uint8_t first_dart_speed_;
+>   uint8_t second_dart_speed_;
+>   uint8_t third_dart_speed_;
+>   uint8_t fourth_dart_speed_;
+>   uint16_t last_dart_launch_time_;
+>   uint16_t operate_launch_cmd_time_;
+> } __packed DartClientCmd;
+> ```
+
+> ```c
+> rm_common::DartStatus dart_status_data_{};
+> typedef struct
+> {
+>   uint8_t dart_belong_;
+>   uint16_t stage_remaining_time_;
+> } __packed DartStatus;
+> ```
+
+```c++
+referee_data_.dart_client_cmd_.
+referee_data_.dart_status_.stage_remaining_time_
+```
+
+
+
+> 飞镖机器人客户端指令数据：0x020A。发送频率：10Hz，发送范围：单一机器人
+>
+> **dart_launch_opening_status_**：当前飞镖发射口的状态
+> 1：关闭；
+> 2：正在开启或者关闭中
+> 0：已经开启
+>
+> **dart_attack_target_**：飞镖的打击目标，默认为前哨站；
+> 0：前哨站；
+> 1：基地。
+>
+> **target_change_time**:切换打击目标时的比赛剩余时间
+>
+> 单位秒，从未切换默认为 0。
+>
+> **operate_launch_cmd_time_**：最近一次操作手确定发射指令时的比赛剩余时间
+>
+> 单位秒, 初始值为 0
