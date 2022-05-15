@@ -416,12 +416,20 @@ void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time)
 
 ### 拨动开关
 
+> //拨动开关判断：左右+位置+位置流状态
+> rightSwitchDownRise                                                                 //到达最下面一格
+> leftSwitchMidFall                                                                   //从中间一格离开
+
 ```c++
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise()
 void ChassisGimbalShooterCoverManual::rightSwitchMidRise() 
 void ChassisGimbalShooterCoverManual::rightSwitchUpRise()
     //仅右拨动开关下拨时，cover命令才会执行发布
 ```
+
+
+
+
 
 
 

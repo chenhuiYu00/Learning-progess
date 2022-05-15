@@ -425,26 +425,22 @@ struct GraphConfig
 
 
 
-
-
 ## 新的理解
 
 ```c++
 std::map<std::string, Graph *> graph_vector_;
 //一份图像容器，从yaml拉取所有的图像配置数据
 
-话题数据/joint_state 下的position数组，第九位也是最后一位元素即为yaw_joint相对数据，该数据在初始状态底盘为对齐云台时为0，向左转一直增，向右转一直减。转一圈数值约为6.2
-    
+话题数据/joint_state 下的position数组，第10位也是最后一位元素即为yaw_joint相对数据，该数据在初始状态底盘为对齐云台时为0，向左转一直增，向右转一直减。转一圈数值约为6.2
 ```
 
 ```c++
   double cover_yaw_joint_ = yaw_joint_;
   while (abs(cover_yaw_joint_) > 2 * M_PI){
-        cover_yaw_joint_ += cover_yaw_joint_>0 ? 2 * M_PI : -2 * M_PI;
+        cover_yaw_joint_ += cover_yaw_joint_>0 ? -2 * M_PI : 2 * M_PI;
      }
         
   return cover_yaw_joint_;//限制yaw_joint 范围大小
-
 
 
 
@@ -460,15 +456,19 @@ if (end_positions_.size() > 1) {
 
 
 
+```c++
+graph.setOperation(rm_common::GraphOperation::UPDATE);               //手动调用
+graph.second->setOperation(rm_common::GraphOperation::ADD);          //以下会通过add()调用，也可重载add()
+graph.second->display();
+```
 
 
 
-
-
-
-
-
-
+```c++
+//确认问题
+ graph.second->updatePosition(0., time);
+  //获取yaw_joint数据有问题
+```
 
 
 
@@ -487,6 +487,18 @@ if (end_positions_.size() > 1) {
 
 
 ## 可能需要的数据
+
+> ```
+> 飞镖发射口倒计时：cmd_id (0x0105)
+> 
+> 0 1 15s 倒计时
+> typedef __packed struct
+> {
+> uint8_t dart_remaining_time;
+> } ext_dart_remaining_time_t;
+> ```
+>
+> 
 
 > ```c
 > 机器人间交互数据
@@ -552,3 +564,129 @@ referee_data_.dart_status_.stage_remaining_time_
 > **operate_launch_cmd_time_**：最近一次操作手确定发射指令时的比赛剩余时间
 >
 > 单位秒, 初始值为 0
+
+
+
+
+
+# Msg优化
+
+
+
+## power_limit_state
+
+> 在power_limit.h文件中，哨兵功率限制30w，工程300w。
+>
+> 步兵英雄另行判断：
+>
+> 准备阶段设置为30w；
+>
+> 当游戏设置的机器人底盘功率上限大于120w时，设置功率限制为yaml文件的数据的burst_power。
+>
+> 其他情况下，分别匹配TEST，BURST，NORMAL，CHARGE
+>
+> 非爆发模式下，当电容的功率限制约等于当前底盘功率限制时，校准电容功率限制。
+
+
+
+```c++
+trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode,
+                           chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::BURST, 0,
+                           chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::CHARGE);
+```
+
+
+
+旧manual和新manual有chassis_cmd_sender_，届时旧referee可直接获取chassis_cmd_sender
+
+新referee舍弃了chassis_cmd_sender，转而用data_下的新订阅者获取mode
+
+
+
+**该变量贯通新referee与新manual，所有逻辑建立于话题发布，若取消可能需要重写**
+
+
+
+#### 新的理解
+
+> 该变量是中间变量，沟通power_limit与裁判系统上GameRobotStatus的uint16_t chassis_power_limit;
+>
+> **由于推导模式的算法可知，可利用前后状态算出status**
+
+让我们从超级电容的msg中的limit_power倒推出status.
+
+```c
+referee_data_.game_robot_status_.chassis_power_limit
+```
+
+
+
+#### 新的问题
+
+> TEST,CHARGE,NORMAL模式仅通过简单的参数运算，但BURST模式涉及的参数数量繁多
+
+
+
+## eject
+
+```c++
+  void setEject(bool flag)
+  {
+    eject_flag_ = flag;
+    msg_.eject = flag;
+  }
+  bool getEject() const
+  {
+    return eject_flag_;
+  }
+```
+
+使用方式是在manual中触发按键时有相应的
+
+```
+  gimbal_cmd_sender_->setEject(true);
+```
+
+
+
+> ```c++
+> class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisCmd>
+>     //命令发布者的话题发布依靠command_send.h,在该类中派生而出的命令发布方式是设置template class type 为ChassisCmd
+> ```
+
+
+
+#### 新的理解
+
+> eject相关在command.send中
+
+```c++
+  void setRate(double scale_yaw, double scale_pitch)
+  {
+    msg_.rate_yaw = scale_yaw * max_yaw_rate_;
+    msg_.rate_pitch = scale_pitch * max_pitch_vel_;
+    if (eject_flag_)//eject的判断字
+    {
+      msg_.rate_yaw *= eject_sensitivity_;
+      msg_.rate_pitch *= eject_sensitivity_;
+    }
+```
+
+、
+
+
+
+## burst_mode
+
+```c++
+  void setBurstMode(bool burst_flag)
+  {
+    heat_limit_->setMode(burst_flag);
+    msg_.burst_mode = burst_flag;
+  }
+  bool getBurstMode()
+  {
+    return heat_limit_->getMode();
+  }
+```
+
