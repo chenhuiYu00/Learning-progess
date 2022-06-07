@@ -1,25 +1,96 @@
-# Referee移植
+# Referee
+
+> 目前，我们展示的是已经完成分离功能后的referee，它将只保留获取裁判系统信息和发送交互数据的功能。其中交互数据包括自定义机器人间交互数据和ui绘制。现在依靠这篇文档，我将带您了解referee的基础功能。
+
+- **在阅读开始前，我们建议您先阅读裁判系统[串口协议](https://rm-static.djicdn.com/tem/17348/RoboMaster_%E8%A3%81%E5%88%A4%E7%B3%BB%E7%BB%9F%E4%B8%B2%E5%8F%A3%E5%8D%8F%E8%AE%AE%E9%99%84%E5%BD%95%20V1.3.pdf)，这将帮助您了解referee**
 
 
 
-## 收发数据
+工程依靠action传输
 
-> 目标数据
->
-> uint16 chassis_volt
-> uint16 chassis_current
-> float32 chassis_power
-> uint16 chassis_power_buffer
-> uint16 shooter_heat_cooling_limit
-> uint16 shooter_heat
-> uint16 robot_hp
-> float32 bullet_speed
-> uint16 hurt_armor_id
-> uint16 hurt_type
->
-> 
->
-> time stamp
+
+
+## 裁判系统
+
+> 我们首先需要了解，裁判系统在RobotMaster中是一个怎样的存在。在实物上，您在机器人的底盘上会见到一个黑色带有屏幕的方块，这便是裁判系统主控本身，依靠这块主控，机器人能够将数据通过串口传输至服务器，从而在裁判系统界面显示出来。裁判系统中传输的数据，包括但不限于机器人状态，比赛阶段信息，场地情况，交互数据...，我们首先要做到的，是从裁判系统中接受数据，这将是referee工作的基础。
+
+让我们先从referee接受数据开始。、
+
+
+
+### 数据接受
+
+> 在rm_referee/referee/referee.h文件中，我们能够找到函数**read()**,通过这个函数，我们能够读到裁判系统串口传输而来的数据，它是如何而实现？接下来我们进行解析：首先在clion中尝试在read()函数的位置同时按下ctrl与鼠标左键，我们将会跳到referee.cpp，这是该函数实现的地方。
+
+```c
+void Referee::read()
+{
+  //临时变量
+    //我们无法提前预知数据帧，于是我们需要先将其置零
+  uint8_t temp_buffer[256] = { 0 };
+  int frame_len;
+    
+  //实时性判断
+    //通过时间差来判断数据是否实时，这会很重要，非实时数据会干扰到我们许多的判断
+  if (ros::Time::now() - last_get_ > ros::Duration(0.1))
+    referee_data_.is_online_ = false;
+    
+  //。。。
+  if (rx_len_ < k_unpack_buffer_length_)
+  {
+    for (int kI = 0; kI < k_unpack_buffer_length_ - rx_len_; ++kI)
+      temp_buffer[kI] = unpack_buffer_[kI + rx_len_];
+    for (int kI = 0; kI < rx_len_; ++kI)
+      temp_buffer[kI + k_unpack_buffer_length_ - rx_len_] = rx_buffer_[kI];
+    for (int kI = 0; kI < k_unpack_buffer_length_; ++kI)
+      unpack_buffer_[kI] = temp_buffer[kI];
+  }
+    
+  //解包
+    //具有标识符的帧将会解包，unpack()会执行数据获取的功能
+  for (int kI = 0; kI < k_unpack_buffer_length_ - k_frame_length_; ++kI)
+  {
+    if (unpack_buffer_[kI] == 0xA5)
+    {
+      frame_len = unpack(&unpack_buffer_[kI]);
+      if (frame_len != -1)
+        kI += frame_len;
+    }
+  }
+  //读取超级电容数据
+  super_capacitor_.read(rx_buffer_);
+ //获取机器人数据，包含本机id等
+  getRobotInfo();
+ //获取到数据后，我们该发布了，publishDada()将会把数据发布在话题上，有需要的用户可以订阅它
+  publishData();
+}
+```
+
+现在我们能从这段代码大概了解referee初步的功能了，首先获取数据帧，接着完成解包，之后处理数据，最后将数据发布出去。其中每一步都由函数完成。
+
+通过ctrl+加鼠标左击的方式，跳到函数实现的地方，详细了解函数如何完成它自己的功能。
+
+
+
+
+
+**提问：**
+
+1. 如果本机机器人是哨兵（sentry），在执行getRobotInfo()会与其他机器人有什么不同？
+
+2. referee获取的数据会发布在哪些话题？请列举一二 
+
+
+
+
+
+### UI绘制
+
+> RobotMaster支持选手自定义ui，和我们预设想的花里胡哨种样繁多的游戏ui不同，我们将要绘制的ui既不能加入劲爆的打击音效，也不能添加屏幕交互。我们所能做到的，
+
+
+
+
 
 
 
@@ -60,6 +131,25 @@ void Referee::publishData()
 
 }
 ```
+
+## 收发数据
+
+> 目标数据
+>
+> uint16 chassis_volt
+> uint16 chassis_current
+> float32 chassis_power
+> uint16 chassis_power_buffer
+> uint16 shooter_heat_cooling_limit
+> uint16 shooter_heat
+> uint16 robot_hp
+> float32 bullet_speed
+> uint16 hurt_armor_id
+> uint16 hurt_type
+>
+> 
+>
+> time stamp
 
 
 
@@ -468,9 +558,109 @@ graph.second->display();
 //确认问题
  graph.second->updatePosition(0., time);
   //获取yaw_joint数据有问题
+
+//新的思路
+  在plotjugger下，发现数据排列方式为 joint_state.yaw_joint.position
 ```
 
 
+
+## UI发射队列
+
+> 在sendui()函数中，会检查ui_quene，排在队列最后的ui将会优先发布
+
+```c
+//addui()中设置了优先级别
+  if (priority_flag)
+    ui_queue_.push_back(std::pair<rm_common::GraphConfig, std::string>(config, content));
+  else
+    ui_queue_.insert(ui_queue_.begin(), std::pair<rm_common::GraphConfig, std::string>(config, content));
+}
+```
+
+```c
+//sendui()从队列的最后一个开始检查
+if (ui_queue_.back().second.empty())
+  {
+    tx_data.header_.data_cmd_id_ = rm_common::DataCmdId::CLIENT_GRAPH_SINGLE_CMD;
+    data_len -= 30;
+  }
+  else
+  {
+    tx_data.header_.data_cmd_id_ = rm_common::DataCmdId::CLIENT_CHARACTER_CMD;
+    for (int i = 0; i < 30; i++)
+    {
+      if (i < (int)ui_queue_.back().second.size())
+        tx_data.content_[i] = ui_queue_.back().second[i];
+      else
+        tx_data.content_[i] = ' ';
+    }
+  }
+```
+
+
+
+## 发布功能函数
+
+> UiBase()提供基础的add()函数，而在需要加入发布内容或其他数据的ui，它们会定义update()函数。
+>
+> flash之所以能够绕过开dbus加入ui在于它调用了另一个重载的dispaly()，从而跳过右拨动按键上打的要求。
+
+```c
+void Graph::display(const ros::Time& time, bool state, bool once)
+{
+  if (once)
+  {
+    if (state)
+    {
+      last_time_ = time;
+      config_.operate_type_ = rm_common::GraphOperation::ADD;
+    }
+    if (time - last_time_ > delay_)
+      config_.operate_type_ = rm_common::GraphOperation::DELETE;
+  }
+  else if (state && time - last_time_ > delay_)
+  {
+    config_.operate_type_ = config_.operate_type_ == rm_common::GraphOperation::ADD ?
+                                rm_common::GraphOperation::DELETE :
+                                rm_common::GraphOperation::ADD;
+    last_time_ = time;
+  }
+  display(true);
+}
+```
+
+
+
+## GraphOperation::
+
+> 该状态并非无用，它会在一个重载的display()中进行判断
+>
+> 该状态不会在本地进行判断，它在GraphConfig中被裁判系统检测，最终决定是否发布。
+
+```c
+void Graph::display(const ros::Time& time, bool state, bool once)
+{
+  if (once)
+  {
+    if (state)
+    {
+      last_time_ = time;
+      config_.operate_type_ = rm_common::GraphOperation::ADD;
+    }
+    if (time - last_time_ > delay_)
+      config_.operate_type_ = rm_common::GraphOperation::DELETE;
+  }
+  else if (state && time - last_time_ > delay_)
+  {
+    config_.operate_type_ = config_.operate_type_ == rm_common::GraphOperation::ADD ?
+                                rm_common::GraphOperation::DELETE :
+                                rm_common::GraphOperation::ADD;
+    last_time_ = time;
+  }
+  display(true);
+}
+```
 
 
 
@@ -481,6 +671,25 @@ graph.second->display();
 > 需求：能够显示当前飞镖发射架可发射的状态，有一个舱门打开的状态，显示还有多久开门的时间；
 >
 > 切换到前哨战，基地位置；发射
+
+```c
+command sender.h中sender会从配置文件中拉取要发布的话题名等其它数据，同时在派生的类中你可以自定义向话题发布的数据类型。按键并设置数据，最后发布即可。
+```
+
+
+
+
+
+```c++
+在chassis gimbal manual的sendui()中最终执行
+  chassis_cmd_sender_->sendCommand(time);
+  vel_cmd_sender_->sendCommand(time);
+  gimbal_cmd_sender_->sendCommand(time);
+```
+
+
+
+
 
 
 
@@ -583,7 +792,7 @@ referee_data_.dart_status_.stage_remaining_time_
 >
 > 当游戏设置的机器人底盘功率上限大于120w时，设置功率限制为yaml文件的数据的burst_power。
 >
-> 其他情况下，分别匹配TEST，BURST，NORMAL，CHARGE
+> 其他情况下，分别匹配TEST(0)，BURST(1)，NORMAL(2)，CHARGE(3)
 >
 > 非爆发模式下，当电容的功率限制约等于当前底盘功率限制时，校准电容功率限制。
 
@@ -624,6 +833,38 @@ referee_data_.game_robot_status_.chassis_power_limit
 #### 新的问题
 
 > TEST,CHARGE,NORMAL模式仅通过简单的参数运算，但BURST模式涉及的参数数量繁多
+
+
+
+#### 代码解读
+
+```c++
+//哨兵和工程有另外条件，该代码仅适用于英雄步兵
+
+int ChassisGimbalReferee::getPowerLimitStatus(double limit_power_, int referee_power_limit) //limit power是给超级电容设置的功率，refereepower是裁判系统设置的最大功率
+{
+  if (limit_power_ == 0)
+    return 0;
+  if (limit_power_ == (double)referee_power_limit)
+    return 2;
+  else if (limit_power_ == (double)referee_power_limit * 0.85)
+    return 3;
+  else if (data_.referee_.referee_data_.capacity_data.cap_power_ > capacitor_threshold)
+  {
+    if (data_.chassis_cmd_data_.mode == rm_msgs::ChassisCmd::GYRO || limit_power_ == referee_power_limit + extra_power)
+      return 1;
+    else if (limit_power_ == burst_power ||
+             limit_power_ == data_.referee_.referee_data_.game_robot_status_.chassis_power_limit_)
+      return 1;
+  }
+  else
+    ROS_ERROR("Can't get power limit status!");
+}
+```
+
+
+
+
 
 
 
@@ -688,5 +929,66 @@ referee_data_.game_robot_status_.chassis_power_limit
   {
     return heat_limit_->getMode();
   }
+```
+
+
+
+
+
+
+
+# 矿石倒计时
+
+> 开局10s和3min后场上会掉落金矿石，第二次矿石掉落前需要提醒。
+
+## 可能需要的数据
+
+> ```c
+> typedef struct
+> {
+>   uint8_t game_type_ : 4;
+>   uint8_t game_progress_ : 4;
+>   uint16_t stage_remain_time_;//当前阶段剩余时间，单位 s
+>   uint64_t sync_time_stamp_;
+> } __packed GameStatus;
+> 
+> 
+> game_progress_ 
+> • 0：未开始比赛；
+> • 1：准备阶段；
+> • 2：自检阶段；
+> • 3：5s 倒计时；
+> • 4：对战中；
+> • 5：比赛结算中
+> ```
+
+
+
+
+
+# 工程救援卡RFID
+
+> 被击倒的机器人裁判系统会显示工程救援卡是否刷到机器人的状态，该bit位为1时成功刷到。工程的需求是将机器人是否刷到卡为状态显示在ui上。
+>
+> 被救援机器人通过车间通讯将该数据发给工程，方案有两种：一是机器人仅发送数据给工程，工程进行ui绘制；二是机器人对ui进行改变对象封装，将其直接发送给工程
+
+```c
+bit 0：基地增益点 RFID 状态；
+bit 1：高地增益点 RFID 状态；
+bit 2：能量机关激活点 RFID 状态；
+bit 3：飞坡增益点 RFID 状态；
+bit 4：前哨岗增益点 RFID 状态；
+bit 6：补血点增益点 RFID 状态；
+bit 7：工程机器人复活卡 RFID 状态；
+bit 8-31：保留
+
+typedef __packed struct
+{
+uint32_t rfid_status  //这是二进制数据
+} ext_rfid_status_t;
+```
+
+```c
+rm_common::RfidStatus
 ```
 

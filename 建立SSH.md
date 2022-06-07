@@ -47,3 +47,25 @@ ssh yuchen@10.33.48.9                                   #之后输入密码
 ```
 
 发现登录其他ifconfig上面的ip也能进去但是有的里面ls命令界面没东西
+
+
+
+
+
+## 配置远程登陆用户
+
+```
+1.useradd -d /home/newuser -m newuser --创建用户
+2.passwd newuser --重新定义密码
+3.修改远程登陆的文件 vi /etc/ssh/sshd_config 新增 AllowUsers 用户名(newuser) 保存文件,退出
+4.重启sshd:service sshd restart 操作完成之后就可以成功登陆
+```
+
+
+
+配置服务器后的操作
+
+```
+https://blog.csdn.net/weixin_44053794/article/details/122511907
+```
+
