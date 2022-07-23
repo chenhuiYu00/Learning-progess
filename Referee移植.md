@@ -935,6 +935,77 @@ int ChassisGimbalReferee::getPowerLimitStatus(double limit_power_, int referee_p
 
 
 
+## 调试代码相关
+
+### 函数频率
+
+> main.cpp里 ros::Rate loop_rate(40);设置频率
+
+基本上确定，收发频率会影响当前数据长度，猜测串口存在缓冲区，当我们读取时会读取这些数据。如果读的频率低，那么数据会累积至较大值。
+
+```c
+rm_referee频率为10HZ的条件下数据长度:       
+        /rm_referee: [RefereeBase::run]: rx_len: 44       
+        /rm_referee: [RefereeBase::run]: rx_len: 440       //明显超出了应有的长度(256)
+        /rm_referee: [RefereeBase::run]: rx_len: 364
+        /rm_referee: [RefereeBase::run]: rx_len: 396
+        /rm_referee: [RefereeBase::run]: rx_len: 408
+        /rm_referee: [RefereeBase::run]: rx_len: 396
+        /rm_referee: [RefereeBase::run]: rx_len: 408
+        /rm_referee: [RefereeBase::run]: rx_len: 416
+        /rm_referee: [RefereeBase::run]: rx_len: 516
+        /rm_referee: [RefereeBase::run]: rx_len: 396
+        /rm_referee: [RefereeBase::run]: rx_len: 408
+        /rm_referee: [RefereeBase::run]: rx_len: 364
+        /rm_referee: [RefereeBase::run]: rx_len: 440
+        /rm_referee: [RefereeBase::run]: rx_len: 416
+```
+
+```c
+rm_manual频率为100HZ的条件下数据长度:
+          /rm_manual: [Referee::read]: rx_len: 12 and 256          //rx_len与限长256
+          /rm_manual: [Referee::read]: rx_len: 12 and 256
+          /rm_manual: [Referee::read]: rx_len: 12 and 256
+          /rm_manual: [Referee::read]: rx_len: 128 and 256
+          /rm_manual: [Referee::read]: rx_len: 24 and 256
+          /rm_manual: [Referee::read]: rx_len: 76 and 256
+          /rm_manual: [Referee::read]: rx_len: 12 and 256
+          /rm_manual: [Referee::read]: rx_len: 64 and 256
+          /rm_manual: [Referee::read]: rx_len: 12 and 256
+          /rm_manual: [Referee::read]: rx_len: 12 and 256
+          /rm_manual: [Referee::read]: rx_len: 12 and 256
+          /rm_manual: [Referee::read]: rx_len: 76 and 256
+          /rm_manual: [Referee::read]: rx_len: 12 and 256
+          /rm_manual: [Referee::read]: rx_len: 128 and 256
+          /rm_manual: [Referee::read]: rx_len: 24 and 256
+```
+
+```c
+rm_referee频率为100HZ的条件下数据长度
+        /rm_referee: [RefereeBase::run]: rx_len: 88
+        /rm_referee: [RefereeBase::run]: rx_len: 88
+        /rm_referee: [RefereeBase::run]: rx_len: 100
+        /rm_referee: [RefereeBase::run]: rx_len: 140
+        /rm_referee: [RefereeBase::run]: rx_len: 48
+        /rm_referee: [RefereeBase::run]: rx_len: 76
+        /rm_referee: [RefereeBase::run]: rx_len: 112
+        /rm_referee: [RefereeBase::run]: rx_len: 152
+        /rm_referee: [RefereeBase::run]: rx_len: 100
+        /rm_referee: [RefereeBase::run]: rx_len: 88
+        /rm_referee: [RefereeBase::run]: rx_len: 88
+        /rm_referee: [RefereeBase::run]: rx_len: 100
+        /rm_referee: [RefereeBase::run]: rx_len: 88
+        /rm_referee: [RefereeBase::run]: rx_len: 100
+```
+
+
+
+
+
+
+
+
+
 
 
 # 矿石倒计时

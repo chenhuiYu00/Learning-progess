@@ -68,20 +68,20 @@
 >
 > ​																									  鼠标滚轮：调节云台灵敏度
 
-| 按键   | 功能                       |
-| ------ | -------------------------- |
-| g      | 切换小陀螺/普通模式        |
-| e      | 切换扭腰/普通模式          |
-| b      | 功率降低，超级电容充电     |
-| q      | 关闭枪口热量限制           |
-| f      | 关闭发射，摩擦轮停转       |
-| ctrl+c | 切换锁定目标(装甲板)       |
-| ctrl+v | 校准敌方颜色               |
-| ctrl+b | 调整相机曝光度             |
-| ctrl+z | 切换供弹舱门开启/关闭      |
-| ctrl+q | 重置供弹舱门并校准         |
-| ctrl+r | 云台检测到敌方时进入小陀螺 |
-| shift  | 开启超级电容               |
+| 按键                                                         | 功能                       |
+| ------------------------------------------------------------ | -------------------------- |
+| g                                                            | 切换小陀螺/普通模式        |
+| e                                                            | 切换扭腰/普通模式          |
+| b                                                            | 功率降低，超级电容充电     |
+| xxxxxxxxxx  typedef enum {     ROBOT_INTERACTIVE_CMD_MIN = 0x0200,     ROBOT_INTERACTIVE_CMD_MAX = 0x02FF,     CLIENT_GRAPH_DELETE_CMD = 0x0100,     CLIENT_GRAPH_SINGLE_CMD = 0x0101,     CLIENT_GRAPH_DOUBLE_CMD = 0x0102,     CLIENT_GRAPH_FIVE_CMD = 0x0103,     CLIENT_GRAPH_SEVEN_CMD = 0x0104,     CLIENT_CHARACTER_CMD = 0x0110, } DataCmdId;c | 关闭枪口热量限制           |
+| f                                                            | 关闭发射，摩擦轮停转       |
+| ctrl+c                                                       | 切换锁定目标(装甲板)       |
+| ctrl+v                                                       | 校准敌方颜色               |
+| ctrl+b                                                       | 调整相机曝光度             |
+| ctrl+z                                                       | 切换供弹舱门开启/关闭      |
+| ctrl+q                                                       | 重置供弹舱门并校准         |
+| ctrl+r                                                       | 云台检测到敌方时进入小陀螺 |
+| shift                                                        | 开启超级电容               |
 
 
 

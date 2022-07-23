@@ -57,3 +57,12 @@ enumMap.insert(make_pair(1,"One"));
 //返回map中目前存储条目的总数用size()方法：
 int nSize = enumMap.size();
 ```
+
+
+
+
+
+##  延时函数
+
+> https://wenku.baidu.com/view/e7967cf787254b35eefdc8d376eeaeaad1f316ef.html
+
