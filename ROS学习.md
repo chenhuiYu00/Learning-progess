@@ -73,3 +73,20 @@ rosparam set use_sim_time true
 
 # 阅读团队代码
 
+## 打印类的名字
+
+> 我们如果想要在控制台输出某个类的名字，我们应该用什么命令？
+
+在rm_common的serice_caller.h里我们可以找到这样一条命令
+
+```
+typeid(ServiceType).name()
+```
+
+[更多](https://www.bbsmax.com/A/kvJ3Xm7O5g/)
+
+**t.name()**
+返回类型的C-style字符串，类型名字用系统相关的方法产生。
+
+ServiceType是通过template <class ServiceType>获取的类，如果这是个派生类，那么.name()并不会打印出基类名，而是当前类的名字
+
