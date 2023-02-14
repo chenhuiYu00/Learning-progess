@@ -2,5 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/master/机器人学/机器人动力学推导Sympy/sympy" vcs="Git" />
   </component>
 </project>

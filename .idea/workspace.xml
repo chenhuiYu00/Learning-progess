@@ -9,7 +9,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="78b6899f-15a2-4b39-9fd1-757fa2b76ea4" name="Changes" comment="" />
+    <list default="true" id="78b6899f-15a2-4b39-9fd1-757fa2b76ea4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/机器人学/机器人动力学—拉格朗日法.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/机器人学/机器人动力学—拉格朗日法.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/调试.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/调试.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/远程拉取.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/远程拉取.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -53,6 +58,8 @@
       <workItem from="1668159984317" duration="114000" />
       <workItem from="1672848921429" duration="774000" />
       <workItem from="1672886339070" duration="932000" />
+      <workItem from="1672887283880" duration="780000" />
+      <workItem from="1676388268921" duration="1000" />
     </task>
     <task id="LOCAL-00001" summary="Recent all files.">
       <created>1668160073718</created>
@@ -75,7 +82,14 @@
       <option name="project" value="LOCAL" />
       <updated>1672886422639</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="First commit.">
+      <created>1672887344880</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1672887344880</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
