@@ -10,6 +10,60 @@
 
 ## 获取控件内字符
 
+**LineEdit**
+
+```cpp
+QString str = ui->lineEdit->text()
+```
+
+转化为int型
+
+```cpp
+int a = str.toInt();
+```
+
+将QString转化为String型
+
+```cpp
+String b = str.toStdString();
+```
+
+将QString转化为chan[]型
+
+```scss
+str.toStdString().c_str();
+```
+
+将String转换成QString
+
+```cpp
+QString qstr = QString::fromStdString(str);
+```
+
+
+
+**QComboBox**
+
+```cpp
+QString str = ui->comboBox->currentText();//获取当前文本
+
+int index = ui->comboBox->currentIndex();//获取当前索引
+
+int intc = ui->comboBox->count();//获取控件总索引数
+```
+
+获取QString指定字符
+
+```cpp
+QString strl = str.left(2);//获取str从左边数两个字符
+
+QString strr = strl.right(1);//获取strl从右边数一个字符
+```
+
+
+
+**textEdit**
+
 ```c
     //获取TextEdit内所有内容
     QString text = ui->textEdit->toPlainText();
@@ -34,6 +88,39 @@ QString strText=ui->textEdit->document()->toPlainText();
 QStr="插入字符";
 ui->textEdit->insertPlainText(QStr);
 ```
+
+**QLineedit控件**
+
+文本是QString类型，可以直接设置
+
+```cobol
+QString str = "Hello World";
+ui->lineEdit->setText(str);
+```
+
+文本不是QString类型的需转化为QString类型再进行设置
+
+char[]型转化为QString
+
+```cpp
+char a[12] = "Hello World";
+QString str = QString::fromLocal8Bit(a);
+```
+
+int型转化为QString
+
+```cpp
+int a = 10086；
+QString str = QString::number(a,10);//10表示10进制
+```
+
+**QComboBox控件**
+
+```c
+UI->comboBox->setCurrentIndex(5);//显示当前第五项文本
+```
+
+
 
 
 

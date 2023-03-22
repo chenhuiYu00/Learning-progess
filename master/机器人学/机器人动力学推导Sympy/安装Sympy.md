@@ -1449,6 +1449,9 @@ linearize(q_ind=None, qd_ind=None, q_dep=None, qd_dep=None, **kwargs)
 ```c
 式中：状态向量x是n维的，输入向量u是r维的，输出向量y是m维的，状态矩阵A是nxm维的
 输入矩阵B是nxr维的，输出矩阵C是mxn维的，前馈矩阵D是mxr维的
+
+描述一个系统的状态向量为a个，那最终生成的x有2a个元素，多出来的是a的一阶导数
+x内的元素顺序和 LM = LagrangesMethod(L,[q,phi,theta,x_b_l,x_b_r],...) 设置时里的[q,phi,theta,x_b_l,x_b_r]顺序一样
 ```
 
 > 如果kwarg A_and_B为False（默认值），则为线性化形式返回M，A，B，r

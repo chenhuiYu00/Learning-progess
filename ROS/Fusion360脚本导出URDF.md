@@ -68,7 +68,7 @@ https://stackoverflow.com/questions/60478248/controlling-a-4-wheeled-robot-in-ga
 sudo apt-get install ros-noetic-joint-state-publisher
 ```
 
-然后运行`gazebo.launch`和`display.launcha`，并在gazebo中点击开始键
+然后运行`gazebo.launch`和`display.launch`，并在gazebo中点击开始键
 
 
 
@@ -119,13 +119,23 @@ urdf文件有错误，在这里通常是脚本生成了重复的link
 
 
 
+3. ERROR
+
+```
+Ignoring transform for child_frame_id "link1" from authority "unknown_publisher" because of a nan value in the transform (-nan -nan -nan) (-nan -nan -nan -nan)
+```
+
+- (-nan -nan -nan) (-nan -nan -nan -nan)式
+
+没有在urdf写旋转关节的axis属性
+
 
 
 
 
 ### spawner和controller manager
 
-区别好像是前者会载入控制器并运行，后者只是载入
+区别是前者会载入控制器并运行，后者只是载入
 
 <node name="controller_manager" pkg="controller_manager"  type="controller_manager" output="screen"
           args=" 
@@ -137,7 +147,7 @@ urdf文件有错误，在这里通常是脚本生成了重复的link
 
 ### 载入控制器
 
-- 载入后控制器后出现模型乱跳或重叠
+- 载入控制器后出现模型乱跳或重叠
 
 1. 在定义link时取消一些不必要的碰撞，用limit代替
 
@@ -179,3 +189,29 @@ urdf文件有错误，在这里通常是脚本生成了重复的link
 ## fixed冲突
 
 能不使用刚体联接就不要使用，可能会产生模型乱跳的问题
+
+
+
+## link运动太慢
+
+不知道为什么关节旋转得很慢
+
+- 似乎打开所有控制器后就好了，特别是joint_state_controller
+
+
+
+发现是脚本的固有问题,所有的模型都会这样
+
+后来检查出是运动link的interial的问题
+
+  <inertial>
+    <origin xyz="0.0 -0.0015 0.055" rpy="0 0 0"/>
+    <mass value="0.02355"/>
+    <inertia ixx="1.4322e-05" iyy="1.4483e-05" izz="1.92e-07" ixy="0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+
+
+
+## 导出时出现base_link错误
+
+但是我已经有base link了，后来发现是关节不能放在草图上

@@ -1161,3 +1161,340 @@ ui->lineEdit->setTextMargins(size.width(), 1, 1 , 1);
 ui->search_lineEdit->clearFocus();
 ```
 
+
+
+## 虚拟遥控器
+
+### 下滑框转拨杆
+
+- 下滑框阶段性滑下
+
+滑块是平滑移动的，现在要求有段落感，所以在函数中实时改变位置
+
+```c++
+QScrollBar* scrollBar = new QScrollBar(Qt::Horizontal);
+scrollBar->setRange(0, 100);
+int middlePosition = 50;
+scrollBar->setValue(middlePosition);
+```
+
+
+
+- 滑块大小改变
+
+可以使用QScrollBar的`setStyleSheet()`函数来自定义滑块的宽度。具体来说，可以使用`width`属性来设置滑块的宽度，例如：
+
+```c++
+QScrollBar::handle:horizontal {
+    width: 50px;
+}
+
+QScrollBar::handle:vertical{
+	background-color:rgba(59,103,168,190);
+	border-radius:7px;
+	width:13px;
+}
+//能改的还有很多
+//https://blog.csdn.net/m0_51668269/article/details/121128185
+```
+
+这将设置水平滑块的宽度为50像素。同样的，可以使用`height`属性来设置垂直滑块的高度。
+
+使用方法：
+
+> `QScrollBar::handle:horizontal` 是Qt样式表中的一个选择器，它用于设置水平滚动条的滑块样式。如果您直接在代码中使用这个选择器，会因为语法错误而报错。
+
+使用这个选择器的正确方法是，将它与样式表中的其他属性一起使用。例如，以下代码设置水平滚动条的滑块宽度为50像素：
+
+```
+cpp
+QString styleSheet =
+    "QScrollBar::handle:horizontal {"
+    "   width: 50px;"
+    "}";
+scrollBar->setStyleSheet(styleSheet);
+```
+
+其中，`scrollBar` 是一个 `QScrollBar` 对象，通过 `setStyleSheet` 方法设置样式表。您可以根据需要添加其他属性，如颜色、边框等
+
+
+
+### TextBroswer Debug
+
+rqt不能ros info，所以新建一个QTextBroswer来打印日志
+
+```c++
+Line = new QTextBrowser();
+Line->resize(350, 600);
+Line->show();
+Line->insertPlainText(QString("Debug text"));
+```
+
+```c++
+std::string str = std::to_string(dbus_pub_data_.ch_l_x) + "\n";
+Line->insertPlainText(QString::fromStdString(str));
+```
+
+显示框聚焦在最下方：
+
+```c
+//在发送一次后添加
+Line->verticalScrollBar()->setValue(Line->verticalScrollBar()->maximumHeight());
+```
+
+
+
+### 离开滑块旋钮自动归位
+
+使用一个定时器来调度。问题是如何让手感更好
+
+```c++
+wheel->underMouse() //这个命令指判断鼠标是否在控件区域，当鼠标离开区域后判断归位进而开始动作，这样可以让动作和手感更好
+```
+
+```c++
+if (!ui_.wheel->underMouse()) {
+  if (abs(ui_.wheel->value() - 50.0) < 2)
+    ui_.wheel->setValue(50);
+  else
+    ui_.wheel->setValue(50 - (50 - ui_.wheel->value()) / 2);
+```
+
+
+
+### 读取键盘
+
+主要通过重写以下两个函数实现
+
+```cpp
+void QWidget::keyPressEvent(QKeyEvent *event)   //键盘按下事件
+void QWidget::keyReleaseEvent(QKeyEvent *event) //键盘松开事件
+12
+```
+
+首先在操作窗口的头文件.h中加入#include ，这是按键的类。然后加入
+
+```cpp
+protected:
+  void keyPressEvent(QKeyEvent *ev) override;
+  void keyReleaseEvent(QKeyEvent *ev) override;
+```
+
+在对应的.cpp文件中，定义keyPressEvent
+
+```cpp
+void GameGUI::keyPressEvent(QKeyEvent* event)
+{
+	if (event->key() == Qt::Key_Escape) {
+		this->close();
+	}
+}
+```
+
+
+
+注意可能需要让焦点位于当前控件
+
+```c++
+this->setFocus();
+```
+
+
+
+### 忘记派生析构函数
+
+要记得定义，不然会报错
+
+```c++
+public:
+  explicit KeyboardButton(QWidget *parent = nullptr);
+  ~KeyboardButton();
+```
+
+```c++
+KeyboardButton::~KeyboardButton() {}
+```
+
+
+
+报错：
+
+> [ERROR] [1678173427.624253293]: Failed to load nodelet [MyPlugin_0] of type [MyPlugin]: Failed to load library /home/yuchen/usetest/RM_ROS/devel/lib//librqt_virtual_dbus.so. Make sure that you are calling the PLUGINLIB_EXPORT_CLASS macro in the library code, and that names are consistent between this macro and your XML. Error string: Could not load library (Poco exception = /home/yuchen/usetest/RM_ROS/devel/lib//librqt_virtual_dbus.so: undefined symbol: _**ZN14KeyboardButtonD1Ev**)
+>
+>  KeyboardButton是派生的类的名字
+
+
+
+### 内部鼠标事件
+
+```c
+void mouseMoveEvent(QMouseEvent *ev) override;
+void wheelEvent(QWheelEvent *ev) override;
+```
+
+```c++
+void KeyboardButton::mouseMoveEvent(QMouseEvent *ev) {
+  if (!slip_state_)
+    return;
+
+  dbus_data_->m_x = ev->globalX();
+  dbus_data_->m_y = ev->globalY();
+}
+
+void KeyboardButton::wheelEvent(QWheelEvent *ev) {
+  if (!slip_state_)
+    return;
+
+  dbus_data_->m_z = ev->delta();
+}
+```
+
+
+
+### 全局鼠标事件
+
+鼠标离开了a窗口并点击了另一个软件的b窗口，此时想要触发a窗口的鼠标事件
+
+#### libinput
+
+> 这个目前没成功，太卡了。
+
+安装库：
+
+```c
+sudo apt-get update
+sudo apt-get install libinput-dev
+```
+
+1. 初始化libinput
+
+```c
+cpp
+#include <libinput.h>
+
+// 初始化libinput
+struct libinput* li = libinput_udev_create_context(&interface, NULL);
+libinput_udev_assign_seat(li, "seat0");
+```
+
+1. 读取输入设备事件
+
+```c
+cpp
+// 循环读取输入设备事件
+while (true) {
+    // 等待输入设备事件
+    int ret = libinput_dispatch(li);
+    if (ret != 0) {
+        // 处理错误
+        break;
+    }
+
+    // 读取所有未处理的事件
+    libinput_event* event;
+    while ((event = libinput_get_event(li)) != nullptr) {
+        // 处理输入设备事件
+        switch (libinput_event_get_type(event)) {
+            case LIBINPUT_EVENT_POINTER_MOTION:
+                // 处理鼠标移动事件
+                break;
+            case LIBINPUT_EVENT_POINTER_BUTTON:
+                // 处理鼠标按钮事件
+                break;
+            default:
+                // 其他事件
+                break;
+        }
+
+        // 释放事件
+        libinput_event_destroy(event);
+    }
+}
+```
+
+1. 释放libinput
+
+```c
+cpp
+// 释放libinput
+libinput_unref(li);
+```
+
+- 检查是否有相关库
+
+```c
+#ifdef __has_include // 检查 __has_include 宏是否可用
+#if __has_include(<libinput.h>)
+#include <libinput.h>
+#define HAS_LIBINPUT true
+#endif
+#else
+#define HAS_LIBINPUT false
+#endif
+```
+
+- cmakelist导入库
+
+```cmake
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBINPUT IMPORTED_TARGET libinput)
+if (LIBINPUT_FOUND)
+    target_link_libraries(${PROJECT_NAME} PkgConfig::LIBINPUT)
+endif ()
+```
+
+
+
+#### input文件
+
+> 读取linux文件来实现，需要权限
+>
+> [链接](https://blog.csdn.net/weixin_29863809/article/details/116876394?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-116876394-blog-50809605.pc_relevant_multi_platform_whitelistv4&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-116876394-blog-50809605.pc_relevant_multi_platform_whitelistv4&utm_relevant_index=3)
+
+```c++
+void KeyboardButton::readMouseState() {
+  static int fd, bytes;
+  static unsigned char data[3];
+  static const char *pDevice = "/dev/input/mice";
+
+  // Open Mouse
+  fd = open(pDevice, O_RDWR);
+  if (fd == -1) {
+    printf("ERROR Opening %s\n", pDevice);
+    return;
+  }
+  int left, middle, right;
+  signed char x, y;
+  while (read_keyboard_) {
+    // Read Mouse
+    bytes = read(fd, data, sizeof(data));
+    if (bytes > 0) {
+      left = data[0] & 0x1;
+      right = data[0] & 0x2;
+      middle = data[0] & 0x4;
+      x = data[1];
+      y = data[2];
+      printf("x=%d, y=%d, left=%d, middle=%d, right=%d\n", x, y, left, middle,
+             right);
+    }
+  }
+}
+```
+
+> 单击鼠标即可生成：
+>
+> x=0, y=0, left=1, middle=0, right=0
+>
+> x=0, y=0, left=0, middle=0, right=0
+>
+> 并且一个鼠标移动(注意“相对”鼠标移动坐标)：
+>
+> x=1, y=1, left=0, middle=0, right=0
+
+
+
+### 多线程
+
+读取键盘文件的速度太慢了，加一个线程
+
+> [链接](https://blog.csdn.net/zong596568821xp/article/details/78893360)

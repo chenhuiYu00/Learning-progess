@@ -11,9 +11,16 @@
   <component name="ChangeListManager">
     <list default="true" id="78b6899f-15a2-4b39-9fd1-757fa2b76ea4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/master/机器人学/机器人动力学—拉格朗日法.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/机器人学/机器人动力学—拉格朗日法.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ROS/Fusion360脚本导出URDF.md" beforeDir="false" afterPath="$PROJECT_DIR$/ROS/Fusion360脚本导出URDF.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ROS/ros_control.md" beforeDir="false" afterPath="$PROJECT_DIR$/ROS/ros_control.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/捉虫集.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/捉虫集.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/机器人学/插件&amp;控制器.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/机器人学/插件&amp;控制器.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/机器人学/机器人动力学推导Sympy/安装Sympy.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/机器人学/机器人动力学推导Sympy/安装Sympy.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/电机说明.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/电机说明.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/master/调试.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/调试.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/master/远程拉取.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/远程拉取.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/配置环境.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/配置环境.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qt_learning/1_Qt.md" beforeDir="false" afterPath="$PROJECT_DIR$/qt_learning/1_Qt.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qt_learning/控件/TextEdit控件.md" beforeDir="false" afterPath="$PROJECT_DIR$/qt_learning/控件/TextEdit控件.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +66,7 @@
       <workItem from="1672848921429" duration="774000" />
       <workItem from="1672886339070" duration="932000" />
       <workItem from="1672887283880" duration="780000" />
-      <workItem from="1676388268921" duration="1000" />
+      <workItem from="1676388268921" duration="93000" />
     </task>
     <task id="LOCAL-00001" summary="Recent all files.">
       <created>1668160073718</created>
@@ -89,7 +96,14 @@
       <option name="project" value="LOCAL" />
       <updated>1672887344880</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Update and add some files.">
+      <created>1676388330475</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1676388330475</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -294,6 +308,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Recent all files." />
     <MESSAGE value="First commit." />
-    <option name="LAST_COMMIT_MESSAGE" value="First commit." />
+    <MESSAGE value="Update and add some files." />
+    <option name="LAST_COMMIT_MESSAGE" value="Update and add some files." />
   </component>
 </project>
