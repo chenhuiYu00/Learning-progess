@@ -719,6 +719,45 @@ int main(int argc, char **argv) {
 
 
 
+## 报错
+
+### boost函数指针
+
+```c
+/home/yuchen/usetest/RM_ROS/src/my_ros/two_wheel_robot/two_wheel_robot_controller/src/two_wheel_robot_controller.cpp:17:77:   required from here
+/usr/include/boost/bind/mem_fn.hpp:333:31: error: pointer to member type ‘void (two_wheel_robot_controller::Controller::)(const boost::shared_ptr<const two_wheel_robot_msg::MoveGoal_<std::allocator<void> > >&)’ incompatible with object type ‘two_wheel_robot_msg::MoveGoal_<std::allocator<void> >’
+  333 |         return (get_pointer(u)->*f_);
+
+```
+
+> 我们注册action服务端的时候有时候有  server_ = new actionServer(nh, "move_action",                             boost::bind(&Controller::actionCallback, this, _1),                             false); 
+>
+> 其中的this指针作用，为什么有的时候不用加this指针？
+
+在这种情况下，this指针用于引用当前对象的实例，它指向类的对象本身。在上面的代码中，this指针指向当前Controller对象的实例。
+
+在C++中，成员函数需要通过类的对象来调用。在类的成员函数中，this指针隐式地传递给函数，因此它可以访问类的成员变量和成员函数。使用boost::bind时，this指针需要作为第一个参数传递，以便boost::bind可以将其用于正确地绑定函数。
+
+至于为什么有时候不需要使用this指针，可能是因为在当前作用域中，this指针已经被隐式地使用了。比如在类的成员函数中直接调用另一个成员函数时，this指针会被隐式地使用。
+
+
+
+解决方法：
+
+```c
+server_ = new actionServer(nh, "move_action",
+                             boost::bind(&Controller::actionCallback, _1),
+                             false);
+//新增this指针，改为：
+server_ = new actionServer(nh, "move_action",
+                             boost::bind(&Controller::actionCallback, this, _1),
+                             false);
+```
+
+
+
+
+
 # ROS Time
 
 > ROS有内置的时间和持续时间类型，由roslib提供，分别为**ros::Time** 和 **ros::Duration**类。其中时间(time)是特定的时刻，而持续时间(Duration)是一个时间段。

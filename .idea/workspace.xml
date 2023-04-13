@@ -11,16 +11,6 @@
   <component name="ChangeListManager">
     <list default="true" id="78b6899f-15a2-4b39-9fd1-757fa2b76ea4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ROS/Fusion360脚本导出URDF.md" beforeDir="false" afterPath="$PROJECT_DIR$/ROS/Fusion360脚本导出URDF.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ROS/ros_control.md" beforeDir="false" afterPath="$PROJECT_DIR$/ROS/ros_control.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/master/捉虫集.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/捉虫集.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/master/机器人学/插件&amp;控制器.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/机器人学/插件&amp;控制器.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/master/机器人学/机器人动力学推导Sympy/安装Sympy.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/机器人学/机器人动力学推导Sympy/安装Sympy.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/master/电机说明.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/电机说明.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/master/调试.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/调试.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/master/配置环境.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/配置环境.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt_learning/1_Qt.md" beforeDir="false" afterPath="$PROJECT_DIR$/qt_learning/1_Qt.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt_learning/控件/TextEdit控件.md" beforeDir="false" afterPath="$PROJECT_DIR$/qt_learning/控件/TextEdit控件.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,6 +57,7 @@
       <workItem from="1672886339070" duration="932000" />
       <workItem from="1672887283880" duration="780000" />
       <workItem from="1676388268921" duration="93000" />
+      <workItem from="1679487895790" duration="481000" />
     </task>
     <task id="LOCAL-00001" summary="Recent all files.">
       <created>1668160073718</created>
@@ -103,7 +94,14 @@
       <option name="project" value="LOCAL" />
       <updated>1676388330475</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Update and add some files.">
+      <created>1679488234787</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1679488234787</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -232,6 +230,31 @@
             </State>
           </value>
         </entry>
+        <entry key="91a24fbd-9d96-4d42-a7c5-26da69e888a6">
+          <value>
+            <State>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$/docs" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
         <entry key="9ec8dd6d-fcf2-4e50-a955-4018134711db">
           <value>
             <State>
@@ -300,6 +323,7 @@
         <entry key="690722eb-34c7-473b-a736-3b1cd9e5b5df" value="TOOL_WINDOW" />
         <entry key="8a8fbaa2-04db-4101-ac35-be4afd9bbc99" value="TOOL_WINDOW" />
         <entry key="8b47f5ab-874c-418f-81c6-bf5aef629be2" value="TOOL_WINDOW" />
+        <entry key="91a24fbd-9d96-4d42-a7c5-26da69e888a6" value="TOOL_WINDOW" />
         <entry key="9ec8dd6d-fcf2-4e50-a955-4018134711db" value="TOOL_WINDOW" />
         <entry key="d6a21fbd-9103-44cc-a7ab-4dd081c4b45c" value="TOOL_WINDOW" />
       </map>

@@ -285,6 +285,10 @@ yaml文件的控制器参数
 
 #### 姿态解算器
 
+> [ros接口](https://zhuanlan.zhihu.com/p/143097152)
+>
+> [代码分析](https://zhuanlan.zhihu.com/p/143214677)
+
 姿态数据更新需要以下头文件
 
 ```c++
@@ -310,8 +314,6 @@ find_package(catkin REQUIRED COMPONENTS
 ```
 
 - 创建一个ComplementaryFilter对象，并设置滤波参数。
-
-> https://zhuanlan.zhihu.com/p/143097152
 
 ```c
 imu_complementary_filter::ComplementaryFilter filter;
@@ -355,6 +357,49 @@ setDoAdaptiveGain(do_adaptive_gain_)函数用于设置是否使用自适应增�
 
 
 
+- 参数orientation_covariance
+
+> `orientation_covariance`是滤波器中的一个参数，它用于设置滤波后的姿态（orientation）的协方差矩阵。协方差矩阵描述了姿态估计的精度和不确定性，其中对角线上的元素表示对应姿态分量的方差，越小表示估计的姿态越精确，反之越大表示不确定性越高。
+
+在ROS中，IMU消息中的`orientation_covariance`字段是一个长度为9的一维数组，表示一个3x3的协方差矩阵。其中，前三个元素表示x轴分量的方差，中间三个元素表示y轴分量的方差，后三个元素表示z轴分量的方差。
+
+在使用滤波器进行姿态估计时，可以将`orientation_covariance`设置为适当的值，以描述估计的姿态的精度和不确定性。通常情况下，可以将协方差矩阵初始化为较大的值，然后随着滤波器的工作，根据估计的精度和不确定性进行动态调整。如果滤波器的姿态估计越来越准确，可以逐渐减小协方差矩阵中的值，反之则可以逐渐增大。
+
+`orientation_covariance`参数用于描述姿态估计的精度和不确定性，可以根据实际情况进行动态调整，以获得更好的姿态估计结果
+
+
+
+- Hamilton四元数到ROS四元数
+
+```c
+#include <tf/LinearMath/Quaternion.h>
+#include <tf/transform_datatypes.h>
+
+
+// get orientation
+double q0, q1, q2, q3;
+imu_filter_.getOrientation(q0, q1, q2, q3);
+	//ROS使用的Hamilton四元数约定q0是标量。然而ROS四元数的形式为[x，y，z，w]，其中w为标量。所以顺序不一样
+tf::Quaternion q = tf::Quaternion(q1, q2, q3, q0);
+
+// Create and publish fitlered IMU message.
+tf::quaternionTFToMsg(q, imu_pub_data.orientation);
+```
+
+- ROS四元数到欧拉角
+
+```c
+// Create and publish roll, pitch, yaw angles
+geometry_msgs::Vector3Stamped rpy;
+rpy.header = imu_msg_raw->header;
+
+tf::Matrix3x3 M;
+M.setRotation(q);
+M.getRPY(rpy.vector.x, rpy.vector.y, rpy.vector.z);
+```
+
+
+
 #### 零漂
 
 > 和rm调试中调零漂的参数一样，我们需要读取并填入相关的offset
@@ -376,6 +421,8 @@ two_wheel_hardware:
 
 #### 节点滤波
 
+> 上面的姿态解算器用起来有些问题，现在使用一下这个包的封装形式，它可以生成一个node来读取imu话题和发布滤波后的imu数据
+>
 > [wiki](http://wiki.ros.org/imu_complementary_filter)
 >
 > [使用 ](https://cloud.tencent.com/developer/article/2098138) [2](https://blog.csdn.net/learning_tortosie/article/details/103189118/)
@@ -421,6 +468,16 @@ imu_subscriber_.reset(new ImuSubscriber(nh_, "/mynteye/imu/data_raw", queue_size
   </node>
 </launch>
 ```
+
+
+
+
+
+#### 线/角速度匹配
+
+> 通过imu数据获取小车在liner0.2或angular0.5系数时的速度和角速度，将其与cmd匹配变成实际速度。
+>
+> 之后将速度命令发布，如果有速度和加速度之间的偏差，则在上位机修正cmd_vel下的系数直到其达到目标值
 
 
 
@@ -579,7 +636,7 @@ int main(int argc, char** argv)
 
 > [wiki](https://github.com/ros-controls/ros_control/wiki/transmission_interface)
 >
-> 告诉控制器机器人执行器的类型以及与执行器对应的joint，==注意handle参数里的名字和urdf的joint名字不是强对应的，为准确二者的名字填的一样==
+> 告诉控制器机器人执行器的类型以及与执行器对应的joint，==注意handle参数里的名字和urdf的joint名字是强对应的，因为tranmission构建时会去寻找对应关节，所以二者的名字填的一样==
 >
 > <type>硬件接口的类型：说明执行器的性质。例如`hardware_interface/PositionJointInterface`说明是一种基于位置控制的执行器，而这个执行器需要注册positionJoinitInterface
 >
@@ -599,12 +656,29 @@ transmission_interface::XXXXeInterface实际上也是一个资源管理器，因
 HardwareResourceManager<T>是一个资源管理类，虽然ActuatorStateHandle与TransmissionHandle是两个基类，但它们都能被管理类注册,在它内部的p函数会循环执行所有Handle的转化关系函数。
 
 
-TransmissionInterfaceLoader是一个通过参数或文件生成transmission_interface::XXXXeInterface对象和TransmissionHandle对象的类，生成Handle时在其中会调用插件 pluginlib::ClassLoader<TransmissionLoader>用于收集转换信息并生成Transmission对象。我们可以定义一个这样的插件来实现无法单靠Offset和减速比来描述的复杂转换关系，例如rm仓库的MultiActuatorTransmissionLoader。建立一个TransmissionInterfaceLoader对象需要在构造函数填入一个RobotTransmissions对象的引用以传入最终生成的transmission_interface::XXXXeInterface对象。
+TransmissionInterfaceLoader是一个通过参数或文件生成transmission_interface::XXXXeInterface对象和TransmissionHandle对象的类，生成Handle时在其中会调用插件 pluginlib::ClassLoader<TransmissionLoader>用于收集转换信息并生成Transmission对象。我们可以重写一个这样的插件来实现无法单靠Offset和减速比来描述的复杂转换关系，例如rm仓库的MultiActuatorTransmissionLoader。建立一个TransmissionInterfaceLoader对象需要在构造函数填入一个RobotTransmissions对象的引用以传入最终生成的transmission_interface::XXXXeInterface对象。
     //TransmissionInterfaceLoader与TransmissionLoader通常是绑定的，因为前者通过读取参数或文件为后者提供生成Transmission所需要的信息。目前没有找到读取参数或文件这部分的源码。
 RobotTransmissions派生自Hardware_interface::InterfaceManager类，InterfaceManager是一个管理Interface的类，不同的Interface表示不同类型的执行器，例如速度，位置和力执行器。TransmissionInterfaceLoader在载入URDF后会把生成的transmission_interface::不同的XXXXeInterface来执行传入RobotTransmissions，这对应上文的 “通过urdf和代码载入的方式可以自动生成该类”。之后可以从中获取不同的XXXXeInterface来执行propagat函数以更新转换
     
 RobotHW也派生自InterfaceManager
 ```
+
+> **transmission和interface如何建立联系？**
+> 或者说，我们先注册了电机的hardware_interface，之后我们又注册了tranmission，而如果我们不调用propagate()的话，hardware_interface下的要发给电机的命令是不更新的。
+> 在[官方源码](https://github.com/ros-controls/ros_control/blob/noetic-devel/transmission_interface/src/transmission_interface_loader.cpp)第89行的
+>
+> ```c
+> TransmissionInterfaceLoader::TransmissionInterfaceLoader(hardware_interface::RobotHW* robot_hw,
+>                                                          RobotTransmissions*          robot_transmissions)
+> ```
+>
+> 说明TransmissionInterfaceLoader需要提供一个hw和RobotTransmissions指针。在这之后，Loader会从hw下寻找我们已经注册了的Handle，在获取转换关系后会自动生成相应的jointHandle，这样最终展现在controller面前的是transmission准备的好了的jointHandle，它对jointHandle下达的命令也在tranmision的propagate()之后转换到对电机的命令上，而这些命令就是我们手动注册ActutorHandle时填入的命令变量。
+>
+> 再扩展到gazebo仿真，gazebo是直接生成jointHandle并注册进interface里，不需要tranmission来建立一层与执行器的联系。
+>
+> 这样来看，如果我们已经有单片机下位机，所有传动关系由单片机负责，我们只需要向电机发目标命令的话，那就只需要注册hardware_interface::JointStateHandle和hardware_interface::JointHandle并注册进hardware_interface::PositionJointInterface(或velocity)，不需要载入transmission，而控制器也可以直接获取jointHandle并发布命令
+
+
 
 
 

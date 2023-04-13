@@ -102,11 +102,52 @@ EtherCAT网络的通信过程如下：
 
 
 
+## 专业名词和术语
+
+
+
+### SDO/PDO
+
+PDO（Process Data Object）和SDO（Service Data Object）是EtherCAT通信中用于数据交换的两种不同类型的数据对象。
+PDO是一种实时数据通信方式，主要用于在EtherCAT网络中进行==实时数据交换==。PDO直接读取和写入从站的I/O数据，支持高速实时通信，但是数据格式和长度是固定的，不太适合于复杂的数据交换。
+SDO是一种用于配置和参数传输的通信方式，支持灵活的数据格式和长度，适用于==对从站进行配置和参数传输==等操作。SDO通过从站对象字典（OD）来进行配置，能够实现动态修改从站参数，提高了系统的灵活性。】
+综合来说，PDO适用于实时数据传输，SDO适用于配置和参数传输。在EtherCAT通信中，一般都会同时使用这两种数据对象来完成数据交换。
+
+
+
+**二者区别**
+
+SDO（Service Data Object）是一种基于==点对点通信==的方式，数据直接在从设备和主设备之间传输。主设备可以发送读或写请求来访问从设备中的各种对象字典（Object Dictionary）的参数。每个请求都包含一个索引和一个子索引，以标识对象字典中的唯一参数。在工作时，主站需要寻址具体的某个从设备。SDO还可以提供元数据，如读取或写入的数据类型和数据长度。
+
+相反，PDO（Process Data Object）是一种通过主设备和所有从设备之间预定义的I/O映射表实现的数据交换方式。I/O映射表包含了进程数据（Process Data）的来源和目标信息，这些进程数据以及配置如何在通信周期内传输数据的各种参数，如数据类型、尺寸和传输模式等。与SDO不同，PDO是以==广播==的形式，即同时向所有从设备发送数据，一个PDO帧中包含所有目标从设备的数据，然后每个从设备通过ID指令来提取自己所需的数据。
+
+总的来说，SDO是一种点对点通信，能够读写对象字典中的各个字段。PDO则是广播式通信，用于主从设备之间的实时数据交换。两者在应用中的使用会有所不同，具体取决于需要通信的数据类型、频率和实时性要求等。
+
+
+
+### OD
+
+OD全称Object Dictionary（对象字典），是 CANopen（Controller Area Network open，控制器局域网开放）协议的一个核心概念，它是一种可读可写的存储器，用于存储==控制器和设备的参数、状态等==信息。OD是一个逻辑概念，是CANopen协议中定义的一个寄存器集合，提供了对设备参数、控制数据、状态等的访问和配置。
+
+在CANopen协议中，每个设备都有自己的OD，可以通过CAN网络进行访问。OD中的每个对象都有一个独立的标识符（包括索引和子索引），OD的结构为一个键值对集合，其中键是对象的标识符，值是对象的数据。OD中的对象包括了各种类型的数据，例如状态标志、PID参数、采样率等等。
+
+通过访问OD对象，可以读取或写入设备的参数和状态信息，从而实现对设备的配置和控制。与设备的寄存器、内存等类似，OD也需要根据具体的设备类型和协议规范进行配置和使用。
+
+
+
+
+
+
+
 
 
 # 配置环境
 
+## 依赖包
+
 > clear_driver依赖以下三个包
+
+### soem_interface
 
 安装[soem_interface](https://github.com/leggedrobotics/soem_interface) //实现EtherCAT底层功能
 
@@ -128,6 +169,10 @@ EtherCAT网络的通信过程如下：
 git clone git@github.com:leggedrobotics/soem_interface.git
 ```
 
+
+
+### ethercat_sdk_master 
+
 安装 [ethercat_sdk_master ](https://github.com/leggedrobotics/ethercat_sdk_master)//实现EtherCAT高层功能
 
 > 1. 实现了EtherCAT Master节点的功能，可以管理和控制所有的EtherCAT从节点。
@@ -139,6 +184,10 @@ git clone git@github.com:leggedrobotics/soem_interface.git
 ```c
 git clone git@github.com:leggedrobotics/ethercat_sdk_master.git
 ```
+
+
+
+### message_logger 
 
 安装[message_logger ](https://github.com/ANYbotics/message_logger) //实现日志流
 
@@ -156,17 +205,12 @@ git clone git@github.com:ANYbotics/message_logger.git
 
 
 
-之后需要自己实现以下功能：
+## 开发
+
+需要自己实现以下功能：
 
 1. 解析和打包EtherCAT数据帧
 2. 实现基于PDO和SDO的数据交换
-
-```c
-PDO（Process Data Object）和SDO（Service Data Object）是EtherCAT通信中用于数据交换的两种不同类型的数据对象。
-PDO是一种实时数据通信方式，主要用于在EtherCAT网络中进行实时数据交换。PDO直接读取和写入从站的I/O数据，支持高速实时通信，但是数据格式和长度是固定的，不太适合于复杂的数据交换。
-SDO是一种用于配置和参数传输的通信方式，支持灵活的数据格式和长度，适用于对从站进行配置和参数传输等操作。SDO通过从站对象字典（OD）来进行配置，能够实现动态修改从站参数，提高了系统的灵活性。】
-综合来说，PDO适用于实时数据传输，SDO适用于配置和参数传输。在EtherCAT通信中，一般都会同时使用这两种数据对象来完成数据交换。
-```
 
 3. 实现EtherCAT从站的配置和管理
 
@@ -175,36 +219,6 @@ SDO是一种用于配置和参数传输的通信方式，支持灵活的数据�
 5. 实现周期性任务的调度和执行
 
 6. 与其他ROS功能包进行集成，如控制器和传感器驱动程序、导航和运动控制等
-
-
-
-
-
-# 开源的EtherCAT
-
-> https://www.shuzhiduo.com/A/kPzOR9Z7dx/
-
-EtherCAT的主站开发是基于EtherCAT机器人控制系统的开发中非常重要的环节。目前常见开源的主站代码为的[RT-LAB](http://www.rt-labs.com/)开发的[SOEM](http://ethercat.rt-labs.com/ethercat) (Simple OpenSource EtherCAT Master)和[EtherLab](http://www.etherlab.org/)的[the IgH EtherCAT® Master](http://www.etherlab.org/)。使用起来SOEM的简单一些，而the IgH EtherCAT® Master更复杂一些，但对EtherCAT的实现更为完整。
-
-具体比较如下表：
-
-| 功能                            | SOME(Simple OpenSource EtherCAT Master)          | IgH EtherCAT Master                                          |
-| ------------------------------- | ------------------------------------------------ | ------------------------------------------------------------ |
-| 版本                            | 1.3.0                                            | 1.5.2                                                        |
-| 更新日期                        | 2013-02-26                                       | 2013-02-12                                                   |
-| 发布公司                        | RT-LAB                                           | EtherLab                                                     |
-| 官方网站                        | ethercat.rt-labs.com                             | [www.etherlab.org](http://www.etherlab.org/)                 |
-| 支持的操作系统                  | Linux,Windows                                    | Linux                                                        |
-| 支持RT内核                      | RTAI, Xenomai                                    | RTAI, Xenomai, RT-Preempt                                    |
-| 支持的CPU                       | Freescale i.MX53 Blackfin 5xx Blackfin 6xx Intel | 支持Linux内核的所有CPU                                       |
-| 支持的网卡                      | -                                                | 8139too - RealTek 8139C (or compatible) Fast-Ethernet chipsets. •e1000 - Intel PRO/1000 Gigabit-Ethernet chipsets (PCI). •e100 - Intel PRO/100 Fast-Ethernet chipsets. •r8169 - RealTek 8169/8168/8101 Gigabit-Ethernet chipsets. •e1000e - Intel PRO/1000 Gigabit-Ethernet chipsets (PCI Express). |
-| CANOpen over EtherCAT (CoE)     | √                                                | √                                                            |
-| Vendor over EtherCAT (VoE)      | √                                                | √                                                            |
-| Distributed clocks              | √                                                | -                                                            |
-| SERCOS over EtherCAT (SoE)      | √                                                | √                                                            |
-| Ethernet over EtherCAT (EoE)    | ×                                                | √                                                            |
-| File Access over EtherCAT (FoE) | √                                                | √                                                            |
-| Safety over EtherCAT (FSoE)     | ×                                                | ×                                                            |
 
 
 
@@ -340,3 +354,112 @@ typedef enum
 > - EC_STATE_OPERATIONAL：EtherCAT从站处于运行状态，可以接收和执行主站发来的控制指令。
 > - EC_STATE_ACK：当EtherCAT从站收到主站的控制指令并执行成功时，会进入ACK状态。
 > - EC_STATE_ERROR：当EtherCAT从站出现错误时，会进入错误状态。
+
+
+
+
+
+
+
+## imu的PDO和SDO
+
+> PDO是一种实时数据通信方式，主要用于在EtherCAT网络中进行实时数据交换
+> SDO是一种用于配置和参数传输的通信方式，适用于对从站进行配置和参数传输等操作。SDO通过从站对象字典（OD）来进行配置，能够实现动态修改从站参数】
+
+
+
+clear_imu用于控制和读取IMU（Inertial Measurement Unit，惯性测量单元）设备的数据。
+
+| 文件名                  | 功能                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| Configuration.cpp       | 实现了一个名为 Configuration 的类，并对该类的成员变量进行检查。 |
+| Controlword.cpp         | 将枚举类型的控制字转换为对应的ID号。                         |
+| ConfigurationParser.cpp | 读取 YAML 配置文件，保存配置项到结构体 configuration_ 中。   |
+| Reading.cpp             | IMU设备数据的读取，包含了设置四元数、线性加速度和角速度的三个成员函数。 |
+| Statusword.cpp          | 输出IMU状态字（Statusword）到控制台。                        |
+| ClearImu.cpp            | 控制和读取IMU设备数据，包含多个类和函数，并包含从文件读取配置信息的函数。 |
+
+
+
+### clear_imu sdo
+
+> 从IMU获取状态字，向IMU发送温度期望，采样率和PID参数
+
+**收**
+
+```c++
+getStatuswordViaSdo(Statusword& statusword)；
+```
+
+- **getStatuswordViaSdo()**
+  该函数通过Sdo的方式获取IMU设备上的状态字，需要传入一个statusword的引用以保存读取的数据。
+
+**发**
+
+```c++
+setDesiredTemperatureViaSdo(configuration_.desiredTemperature_);
+setSampleRateViaSdo(configuration_.sampleRate_);
+setPidParametersViaSdo(configuration_.pidParameters_.kp, configuration_.pidParameters_.ki, configuration_.pidParameters_.kd,
+                       configuration_.pidParameters_.maxOut, configuration_.pidParameters_.maxIOut);
+```
+
+- **setDesiredTemperatureViaSdo()**：
+  该函数通过Sdo方式设置IMU的期望温度，需要传入一个8位无符号整数temp作为温度值。
+- **setSampleRateViaSdo()**：
+  该函数通过Sdo方式设置IMU的采样率，需要传入一个8位无符号整数sampleRate作为采样率值。
+- **setPidParametersViaSdo()**：
+  该函数通过Sdo方式设置IMU的PID参数，需要传入五个参数：控制器的比例系数kp、积分系数ki、微分系数kd、最大输出值maxOut和最大积分输出值maxIOut。其中，PidParameters结构体用于将这几个参数组合在一起。
+
+
+
+### clear_imu pdo
+
+> 在总线中从IMU获取状态字，时间戳，温度，姿态，线加速度和角速度，向IMU发送控制字
+
+**收**
+
+```c++
+reading_.setStatusword(statusword);
+reading_.setStamp(bus_->getUpdateReadStamp());
+
+reading_.setTemperature(txPdo.temperature_);
+reading_.setOrientation(txPdo.orientation_.w_, txPdo.orientation_.x_, txPdo.orientation_.y_, txPdo.orientation_.z_);
+reading_.setLinearAcceleration(txPdo.linearAcceleration_.x_, txPdo.linearAcceleration_.y_, txPdo.linearAcceleration_.z_);
+reading_.setAngularVelocity(txPdo.angularVelocity_.x_, txPdo.angularVelocity_.y_, txPdo.angularVelocity_.z_);
+```
+
+
+
+
+
+
+
+# 
+
+
+
+# 开源的EtherCAT
+
+> https://www.shuzhiduo.com/A/kPzOR9Z7dx/
+
+EtherCAT的主站开发是基于EtherCAT机器人控制系统的开发中非常重要的环节。目前常见开源的主站代码为的[RT-LAB](http://www.rt-labs.com/)开发的[SOEM](http://ethercat.rt-labs.com/ethercat) (Simple OpenSource EtherCAT Master)和[EtherLab](http://www.etherlab.org/)的[the IgH EtherCAT® Master](http://www.etherlab.org/)。使用起来SOEM的简单一些，而the IgH EtherCAT® Master更复杂一些，但对EtherCAT的实现更为完整。
+
+具体比较如下表：
+
+| 功能                            | SOME(Simple OpenSource EtherCAT Master)          | IgH EtherCAT Master                                          |
+| ------------------------------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| 版本                            | 1.3.0                                            | 1.5.2                                                        |
+| 更新日期                        | 2013-02-26                                       | 2013-02-12                                                   |
+| 发布公司                        | RT-LAB                                           | EtherLab                                                     |
+| 官方网站                        | ethercat.rt-labs.com                             | [www.etherlab.org](http://www.etherlab.org/)                 |
+| 支持的操作系统                  | Linux,Windows                                    | Linux                                                        |
+| 支持RT内核                      | RTAI, Xenomai                                    | RTAI, Xenomai, RT-Preempt                                    |
+| 支持的CPU                       | Freescale i.MX53 Blackfin 5xx Blackfin 6xx Intel | 支持Linux内核的所有CPU                                       |
+| 支持的网卡                      | -                                                | 8139too - RealTek 8139C (or compatible) Fast-Ethernet chipsets. •e1000 - Intel PRO/1000 Gigabit-Ethernet chipsets (PCI). •e100 - Intel PRO/100 Fast-Ethernet chipsets. •r8169 - RealTek 8169/8168/8101 Gigabit-Ethernet chipsets. •e1000e - Intel PRO/1000 Gigabit-Ethernet chipsets (PCI Express). |
+| CANOpen over EtherCAT (CoE)     | √                                                | √                                                            |
+| Vendor over EtherCAT (VoE)      | √                                                | √                                                            |
+| Distributed clocks              | √                                                | -                                                            |
+| SERCOS over EtherCAT (SoE)      | √                                                | √                                                            |
+| Ethernet over EtherCAT (EoE)    | ×                                                | √                                                            |
+| File Access over EtherCAT (FoE) | √                                                | √                                                            |
+| Safety over EtherCAT (FSoE)     | ×                                                | ×                                                            |
