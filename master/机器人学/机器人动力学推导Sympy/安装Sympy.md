@@ -229,6 +229,84 @@ limit(sin(x)/x, x, 0)
 
 
 
+###  简化方程
+
+> 常用方法，先展开再简化
+>
+> ```python
+> B = smp.expand(A)
+> B.simplify
+> ```
+
+#### simplify (简化)
+
+
+
+
+
+#### `expand` (展开)
+
+将多项式展开，使用 `expand` 函数。例如：
+
+```python
+x_1 = symbols('x_1')
+expand((x_1 + 1)**2)
+```
+
+
+
+#### `factor` (因式分解)
+
+用 `factor` 函数可以对多项式进行因式分解，例如：
+
+```python
+factor(x**3 - x**2 + x - 1)
+```
+
+
+
+> 实际上，多项式的展开和因式分解是互逆过程，因此 `factor` 和 `expand` 也是相对的。
+
+
+
+#### `collect` (合并同类项)
+
+利用 `collect` 合并同类项，例如：
+
+```python
+expr = x*y + x - 3 + 2*x**2 - z*x**2 + x**3
+collect(expr, x)
+```
+
+
+
+#### `cancel` (有理分式化简)
+
+消去分子分母的公因式使用 `cancel` 函数，例如：
+
+```python
+cancel((x**2 + 2*x + 1)/(x**2 + x))
+```
+
+
+
+#### `apart` (部分分式展开)
+
+使用 `apart` 函数可以将分式展开，例如：
+
+```python
+expr = (4*x**3 + 21*x**2 + 10*x + 12)/(x**4 + 5*x**3 + 5*x**2 + 4*x)
+expr
+```
+
+
+
+```python
+apart(expr)
+```
+
+
+
 ### 解一元二次方程solve
 
 $$
@@ -1447,7 +1525,7 @@ linearize(q_ind=None, qd_ind=None, q_dep=None, qd_dep=None, **kwargs)
 **y=Cx+Du(输出方程)**
 
 ```c
-式中：状态向量x是n维的，输入向量u是r维的，输出向量y是m维的，状态矩阵A是nxm维的
+式中：状态向量x是n维的，输入向量u是r维的，输出向量y是m维的,状态矩阵A是nxm维的
 输入矩阵B是nxr维的，输出矩阵C是mxn维的，前馈矩阵D是mxr维的
 
 描述一个系统的状态向量为a个，那最终生成的x有2a个元素，多出来的是a的一阶导数
@@ -1717,6 +1795,10 @@ Matrix([
 ```
 
 
+
+#### 其他例子
+
+> https://python.hotexamples.com/examples/sympy.physics.mechanics/LagrangesMethod/form_lagranges_equations/python-lagrangesmethod-form_lagranges_equations-method-examples.html
 
 
 

@@ -481,8 +481,6 @@ imu_subscriber_.reset(new ImuSubscriber(nh_, "/mynteye/imu/data_raw", queue_size
 
 
 
-
-
 ## 两个节点发布器
 
 `robot_state_publisher` 和 `joint_state_publisher` 的主要区别在于它们所发布的信息类型不同。
@@ -631,6 +629,10 @@ int main(int argc, char** argv)
 
 
 ## URDF
+
+### jointLimitInterface
+
+> [wiki](https://github.com/ros-controls/ros_control/wiki/joint_limits_interface)
 
 ### Transmission
 
@@ -969,6 +971,14 @@ hardware_interface::ActuatorHandle注册时应该从act_state_interface_使用`g
 
 
 
+#### Gazebo: This controller requires a hardware interface of type 'hardware_interface::ImuSensorInterface', but is not exposed by the robot. Available interfaces in robot
+
+自定义控制器需要获取imu sensor interface，在gazebo总默认的插件只能注册acutor，不能注册imu，需要使用二次开发的插件
+
+
+
+其他插件：https://zhuanlan.zhihu.com/p/368033345
+
 
 
 ## Controller
@@ -1284,3 +1294,15 @@ hardware_interface.cpp:(.text+0x11d6): undefined reference to `urdf::Model::init
 这并不会报错，当你在clion编译一次后再修改代码在终端编译，此时修改的代码不会生效还是原来的包。
 
 catkin clean一下即可
+
+
+
+
+
+## 运行时
+
+### ros::ok()为false
+
+> 程序跑着跑着停了，debug后发现是main函数里的while(ros::ok())过不去
+
+发现是`ros::Rate loop_rate(50);`和我read()和write()的频率没对上，改对后正常
