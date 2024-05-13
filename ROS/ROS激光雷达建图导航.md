@@ -324,7 +324,7 @@ odom_pub.publish(odom);
 
 
 
-## 安装Gmapping
+## Gmapping
 
 > 建图软件
 >
@@ -554,6 +554,337 @@ roslaunch laser_scan_matcher laser_scan_matcher.launch
 
 
 
+## Cartographer
+
+> 和gmapping类似，可以边建图边定位，同时性能消耗较小
+>
+> [github](https://github.com/cartographer-project/cartographer_ros)
+>
+> [安装](https://zhuanlan.zhihu.com/p/335778454) [2](https://blog.csdn.net/qq_46274948/article/details/126160650?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-0-126160650-blog-113117562.235^v38^pc_relevant_sort_base2&spm=1001.2101.3001.4242.1&utm_relevant_index=3)
+>
+> [使用和介绍](https://zhuanlan.zhihu.com/p/116455345)
+>
+> [参数配置](https://blog.csdn.net/qleelq/article/details/112237663)
+
+安装方式有**官网整包**下载和**分包下载**
+
+### 官网整包
+
+1. 安装 wstool下载工具、rosdep和ninja编译工具（ninja是一个新型的编译小工具，用来替换复杂的make，从而实现快速编译）
+
+```bash
+#还需要安装rosdep 或rosdepc
+#wget http://fishros.com/install -O fishros && . fishros
+sudo apt-get install -y python3-wstool ninja-build
+```
+
+2. 建立一个wstool下载+ROS基本编译的二合一环境
+
+```bash
+mkdir catkin_ws
+cd catkin_ws
+wstool init src
+wstool merge -t src https://raw.githubusercontent.com/googlecartographer/cartographer_ros/master/cartographer_ros.rosinstall
+
+#执行下载
+wstool update -t src
+```
+
+这是 wstool 命令生成 .rosinstall 的文件里面的内容，可以看到设置了**cartographer、cartographer-ros**下载链接。
+
+3.安装proto3
+
+Protocol Buffers(简称Protobuf) ，是Google出品的序列化框架，与开发语言无关，和平台无关，具有良好的可扩展性。Protobuf和所有的序列化框架一样，都可以用于数据存储、通讯协议。
+
+```bash
+src/cartographer/scripts/install_proto3.sh
+src/cartographer/scripts/install_abseil.sh
+```
+
+如果出现
+
+```cpp
+cd /usr/local/stow
+sudo stow absl
+sudo: stow：找不到命令
+```
+
+则自行安装stow，然后执行以下操作：
+
+```cpp
+sudo apt install stow
+cd /usr/local/stow/
+sudo stow absl
+```
+
+此外其实除了Protobuf我们还可以配置其他依赖，这些脚本都在/scripts目录下
+
+4. rosdepc
+
+安装起来很简单，一句话的事情，后面小鱼会让其变得更简单。
+
+```text
+sudo pip install rosdepc
+```
+
+如果显示没有pip可以试试pip3。
+
+```text
+sudo pip3 install rosdepc
+```
+
+如果pip3还没有
+
+```text
+sudo apt-get install python3-pip 
+sudo pip install rosdepc
+```
+
+**使用**
+
+```text
+sudo rosdepc init
+rosdepc update
+rosdepc install -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y 
+```
+
+5. 编译
+
+```bash
+catkin_make_isolated --install --use-ninja
+```
+
+
+
+### 分包下载
+
+**1.eigen**
+
+**Eigen是高级 C ++ 模板标头库，用于线性代数，矩阵和矢量运算，几何变换，数值求解器和相关算法。自3.1.1版以来，Eigen是根据Mozilla Public License 2.0许可的开源软件。早期版本是根据GNU较宽松通用公共许可证授权的。**
+
+注意警告：cartographer对eigen，ceres，protobuf有严格的版本限制，版本必须严格！！！
+
+```text
+#选择版本3.2.9
+git clone  https://gitlab.com/libeigen/eigen.git
+mkdir build
+cd build
+cmake ..
+sudo make install
+```
+
+
+安装完成
+
+2.ceres
+
+Ceres solver 是谷歌开发的一款用于非线性优化的库，在谷歌的开源激光雷达slam项目cartographer中被大量使用。
+
+**注意：**ceres版本必须是1.13.0,其它版本与eigen3.2.9不匹配
+
+```text
+#选择版本1.13.0
+git clone https://github.com/ceres-solver/ceres-solver.git
+mkdir build
+cd build
+cmake ..
+make -j8
+sudo make install
+```
+
+编译过程中如果出现这个编译问题：
+
+**Failed to find glog**
+
+```c
+-- Failed to find installed glog CMake configuration, searching for glog build directories exported with CMake.
+
+-- Failed to find an installed/exported CMake configuration for glog, will perform search for installed glog components.
+
+-- Failed to find glog - Could not find glog include directory, set GLOG_INCLUDE_DIR to directory containing glog/logging.h
+
+这个原因是缺失**glog**库(**glog 是一个 C++ 日志库，它提供 C++ 流式风格的 API。在安装 glog 之前需要先安装 gflags，这样 glog 就可以使用 gflags 去解析命令行参数**)，我们可以用apt-get install安装，也可以下载源码进行编译安装.
+```
+
+apt-get install安装:
+
+```text
+sudo apt-get install libgoogle-glog-dev
+```
+
+
+
+下载源码进行编译安装:
+
+```text
+git clone https://github.com/google/glog.git
+cd glog
+mkdir build
+cmake ..
+make
+sudo make install
+```
+
+
+
+再重新进行cere编译安装，又通过一关
+
+![img](images/ROS激光雷达建图导航/v2-3ce90f22a9db1a4555c60ce1a8a15d38_720w.webp)
+
+
+
+3. protobuf
+
+Protocol Buffers(简称Protobuf) ，是Google出品的序列化框架，与开发语言无关，和平台无关，具有良好的可扩展性。Protobuf和所有的序列化框架一样，都可以用于数据存储、通讯协议。
+
+注意：protobuf安装方式特殊，脚本安装
+
+```text
+选择版本3.0.0
+git clone https://github.com/protocolbuffers/protobuf.git
+./autogen.sh
+```
+
+这次也会遇到error问题，
+
+第一个error **48: autoreconf: not found**
+
+是在不同版本的 tslib 下执行 autogen.sh 产生。它们产生的原因一样,是因为没有安装automake 工具, 用下面的命令安装好就可以了。
+
+```text
+sudo apt-get install autoconf automake libtool
+```
+
+第二个error可能是下载问题，这边会提示你下载失败，你可以选择注释掉，或者使用我提供的第二种编译方法：
+
+```text
+#如遇见Error，prot：443,注释autogen.sh脚本34行
+./configure
+make -j8
+sudo make install
+sudo ldconfig
+#测试一下protobuf
+protoc --version
+#不出意外将会显示libprotoc 3.0.0
+```
+
+第二种编译方法：
+
+上文说到，我们在cartographer/scripts目录下可以找到cartographer依赖文件的下载的脚本，这些的脚本里面还有编译的选项，这时候我们就可以看下install_proto3.sh 这个文件，里面可以看到如下内容：
+
+```text
+mkdir build
+cd build
+cmake -G Ninja \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -Dprotobuf_BUILD_TESTS=OFF \
+  ../cmake
+ninja
+sudo ninja install
+```
+
+我们直接复制直接编译即可。
+
+4.abseil
+
+abseil 是 google 开源的 C++通用库，其目标是作为标准库的补充。abseil 不但提供了标准库没有但很常用的功能，也对标准库的一些功能进行了增强设计，使用 abseil 库能使程序性能和开发效率都取得不错的提升。
+
+cartographer对abseil没有版本要求，但是一定要有。
+
+```text
+git clone https://github.com/abseil/abseil-cpp.git
+mkdir build
+cd build
+cmake .. -DCMAKE_CXX_STANDARD=11
+make -j8
+sudo make install
+```
+
+不过在后续编译abseil，大家可能会遇到这个问题
+
+```c
+CMake Error at CMakeLists.txt:49 (find_package):
+By not providing "FindAbseil.cmake" in CMAKE_MODULE_PATH this project has
+asked CMake to find a package configuration file provided by "Abseil", but
+CMake did not find one.
+Could not find a package configuration file provided by "Abseil" with any
+of the following names:
+AbseilConfig.cmake
+abseil-config.cmake
+Add the installation prefix of "Abseil" to CMAKE_PREFIX_PATH or set
+"Abseil_DIR" to a directory containing one of the above files. If "Abseil"
+provides a separate development package or SDK, be sure it has beeninstalled.
+```
+
+![img](images/ROS激光雷达建图导航/v2-a3d0eb9566da001293852ad3c1000076_720w.webp)
+
+
+
+不过没事，是因为CMakeLists.txt在进行搜寻absil中，定义的名称和你编译abseil名称不同，CMakeLists.txt是大写的，而实际你编译安装后的包名称为小写。
+
+
+
+![img](images/ROS激光雷达建图导航/v2-ffd77e4e1da1b4926b5673fad396d971_720w.webp)
+
+
+
+修改如上所示：**Abseil** 修改为 **absl**
+
+5.carographer
+
+**注意：**carographer和cartographer _ros版本必须对应
+
+```bash
+mkdir cartographer
+cd cartographer & mkdir src
+cd src
+
+
+git clone https://github.com/cartographer-project/cartographer.git
+git clone https://github.com/cartographer-project/cartographer_ros.git
+
+catkin_make_isolated --install --use-ninja
+source install_isolated/setup.bash
+```
+
+
+
+6. 运行例程
+
+```bash
+wget -P ~/Downloads https://storage.googleapis.com/cartographer-public-data/bags/backpack_2d/cartographer_paper_deutsches_museum.bag
+roslaunch cartographer_ros demo_backpack_2d.launch bag_filename:=${HOME}/Downloads/cartographer_paper_deutsches_museum.bag
+```
+
+
+
+### 报错
+
+- jinja2
+
+> ImportError: cannot import name ‘contextfilter‘ from ‘jinja2‘
+
+jinja版本3.00之后，context被替代，降级即可
+
+```bash
+pip uninstall jinja2
+pip install jinja2==2.11.3
+```
+
+- markupsafe
+
+> mportError: cannot import name 'soft_unicode' from 'markupsafe' (/home/yuchen/.local/lib/python3.8/site-packages/markupsafe/__init__.py)
+
+问题和jinja类似，要降级
+
+```bash
+pip uninstall markupsafe
+pip install markupsafe==2.0.1
+```
+
+
+
 
 
 # SLAM
@@ -583,3 +914,18 @@ cartographer和gmapping都是SLAM算法的实现，用于构建地图和定位�
 - 功能不同：gmapping可以实现实时地图构建和机器人定位，而cartographer还支持多机器人协同构建地图和定位。
 
 另外，还有一些其他的SLAM算法，如Hector和Karto，它们也有各自的优缺点和适用场景。你可以根据你的需求和条件选择合适的算法。
+
+
+
+
+
+# Move_base
+
+> [github](https://github.com/ros-planning/navigation)
+>
+> [wiki](https://wiki.ros.org/navfn?distro=fuerte)
+>
+> [知乎](https://zhuanlan.zhihu.com/p/428332784)
+
+
+

@@ -106,6 +106,98 @@ https://github.com/leggedrobotics/ocs2
 
 ##  配置环境
 
+###  拉取
+
+>  正常拉取即可
+
+因为blasefo等包是自动下载的，可以修改为gitee的仓库来避免链接不到
+
+我们可以修改cmakelist中的仓库地址：
+
+```c
+# Download & build source
+FetchContent_Declare(blasfeoDownload
+	GIT_REPOSITORY https://github.com/giaf/blasfeo 
+      //这里改为gitee仓库https://gitee.com/lebment/hpipm.git
+	GIT_TAG ae6e2d1dea015862a09990b95905038a756ffc7d
+	UPDATE_COMMAND ""
+	SOURCE_DIR ${BLASFEO_DOWNLOAD_DIR}
+	BINARY_DIR ${BLASFEO_BUILD_DIR}
+	BUILD_COMMAND $(MAKE)
+	INSTALL_COMMAND "$(MAKE) install"
+)
+```
+
+
+
+
+
+### 编译
+
+> ocs2是一个工具箱，你应该选择需要的包编译，否则会因为部分包没有激活码等原因无法完成编译
+>
+> 同一架构的设备可以把编译文件直接复制进工作空间使用，这并没有问题，但是不同架构的文件会有指令集相关的报错，解决方法是在目标架构下编译或者使用交叉编译
+
+```bash
+git clone https://github.com/leggedrobotics/ocs2.git
+git clone https://github.com/leggedrobotics/ocs2_robotic_assets.git
+
+catkin config --install 
+catkin config -DCMAKE_BUILD_TYPE=Release
+
+catkin build ocs2_你需要的包 #注意不能全部编译，因为有一些包的依赖很大且需要激活码(raisim)
+
+中间会有一些依赖包需要去官网找
+```
+
+例如：·[GLPK](https://www.gnu.org/software/glpk/)
+
+
+
+- 在X86下编译
+
+正常选择依赖包编译即可，目前没有遇到问题
+
+
+
+- 在ARM下编译
+
+1. blasfeo_catkin
+
+这个包会在github拉取blasfeo并编译，然而github上面的blasfeo的makefile.rule默认以X86/64构建库从而会报出编译错误。
+
+错误的方法：在gihub手动拉取blasfeo并编译安装，找到目录(/opt/hpipm/lib)，在camkelist里取消其自动拉取hpipm的部分，并指定链接库，这是不对的，这样做及时这个包编译通过，那么子包仍会报依赖错误，可能有解决方法但目前没找到，也许是漏了什么
+
+```cmake
+错误示范
+## Download & build source
+#FetchContent_Declare(hpipmDownload
+
+## 指定静态/动态库
+link_directories(/opt/hpipm/lib)
+```
+
+只要仔细观察，在blasfeo_catkin的camkelist里面有设置编译选项的部分，其中的target的是设置架构，这里我修改为了GENERIC，选择合适的即可，样例可以在blasfeo的源代码里找到makefile.rule，里面有注释后的一系列target
+
+注意如果编译balance仓库时出现`undefined reference to kernel_dgetrf_pivot_8_vs_lib4'`说明架构不匹配，更换一个合适的即可
+
+```c
+# BLASFEO Settings
+set(BUILD_SHARED_LIBS ON CACHE STRING "Build shared libraries" FORCE)
+set(TARGET GENERIC CACHE STRING "Target architecture" FORCE)
+set(BLASFEO_EXAMPLES OFF CACHE BOOL "Examples enabled")
+```
+
+2. hpipm_catkin
+
+和上面的一样，在camkelist里加上下面的即可
+
+```c
+set(TARGET ARMV8A_ARM_CORTEX_A57 CACHE STRING "Target architecture" FORCE)
+```
+
+
+
 ### 工作空间依赖
 
 因为只使用部分包且只编译一次，我们新开一个依赖工作空间并将其install Realse编译
@@ -137,8 +229,10 @@ source ~/catkin_ws/devel/setup.bash
 
 ```bash
 #在depend_ws
-sudo apt-get install ros-noetic-interactive-markers
-catkin build ocs2_msgs ocs2_core ocs2_mpc ocs2_sqp ocs2_ipm ocs2_robotic_tools ocs2_ros_interfaces 
+#sudo apt-get install ros-noetic-interactive-markers
+catkin build ocs2_msgs ocs2_core ocs2_mpc ocs2_sqp ocs2_ipm ocs2_robotic_tools ocs2_ros_interfaces ocs2_ddp ocs2_pinocchio ocs2_slp ocs2_python_interface
+#或者
+catkin build ocs2_ballbot ocs2_ipm ocs2_ros_interfaces ocs2_pinocchio
 
 #在rm_ws
 source ../../depend_ws/install/setup.bash 
@@ -148,8 +242,6 @@ catkin build rm_balance*
 > 好像还有些问题，balance里rm环境是opt，编译depend是source的是rm，然后mpc是source的是depend，依赖树不一样
 >
 > 之后自启source mpc，bashrc里source rm，这样可以直接编译rm
-
-
 
 - clion project config
 
@@ -162,25 +254,25 @@ catkin build rm_balance*
 
 
 
-### 安装
+目前更优秀的是**extend**，它不需要手动source：
 
 ```bash
-git clone https://github.com/leggedrobotics/ocs2.git
-git clone https://github.com/leggedrobotics/ocs2_robotic_assets.git
+mkdir -p depend_ws/src
 
-catkin config --install 
+#设置 install 模式
+catkin install
+# build_type 为 release 比 debug 的代码运行地快一点
 catkin config -DCMAKE_BUILD_TYPE=Release
+#清注释掉所有你 source 过的工作空间，保证 echo ${ROS_PACKAGE_PATH} 的输出为 /opt/ros/noetic/share
+catkin build
 
-catkin build ocs2_你需要的包 #注意不能全部编译，因为有一些包的依赖很大且需要激活码(raisim)
-
-中间会有一些依赖包需要去官网找
+#然后回到你的 rm_ws 下
+catkin clean
+#注释掉所有你 source 过的工作空间，保证 echo ${ROS_PACKAGE_PATH} 的输出为 /opt/ros/noetic/share
+catkin config --extend /home/xxxx/depend_ws/install
+#直接设置 depend_ws 为 ie 依赖
+catkin build
 ```
-
-例如：
-
-- GLPK
-
-https://www.gnu.org/software/glpk/
 
 
 
@@ -380,8 +472,10 @@ mpc
 
 
 
-**MRT（Model Reference Tracking）**
+### **MRT**
 
+> Model Reference Tracking
+>
 > 是一种模型参考跟踪的控制策略，它的目的是使系统的输出跟随一个给定的参考模型的输出，而不管系统的内部结构或动态特性。
 >
 > MRT的基本思想是将系统的输出和参考模型的输出之间的误差作为一个反馈信号，然后设计一个合适的控制器，使得这个误差趋于零或有界。
@@ -402,7 +496,7 @@ MRT和MPC的关系是：
 
 不过，MRT和MPC也有一些区别，比如：
 
-- MRT的目标是使系统的输出跟随参考模型的输出，而MPC的目标是使系统的输出满足一些约束和性能指标。
+- MRT的目标是使系统的输出**跟随参考模型的输出**，而MPC的目标是使系统的输出**满足一些约束和性能指标**。
 - MRT的优化问题是一个输出反馈控制问题，而MPC的优化问题是一个状态反馈控制问题。
 - MRT的优化问题是一个静态优化问题，而MPC的优化问题是一个动态优化问题。
 - MRT的优化问题只需要求解一次，而MPC的优化问题需要在每个控制周期重新求解。
@@ -508,6 +602,8 @@ vector_t getValue(scalar_t time, const vector_t& /*state*/, const vector_t& inpu
 
 #### getLinearApproximation()
 
+> [github](https://github.com/leggedrobotics/ocs2/blob/main/ocs2_robotic_examples/ocs2_mobile_manipulator/src/constraint/EndEffectorConstraint.cpp) 或 balance controller的pitch约束
+
 - ```
   VectorFunctionLinearApproximation getLinearApproximation(scalar_t time, const vector_t& state, const vector_t& input,
                                                            const PreComputation& preComp) const override 
@@ -541,9 +637,9 @@ VectorFunctionLinearApproximation getLinearApproximation(scalar_t time, const ve
 
 
 
-1. 为什么上面代码矩阵ret赋值方式是这样的？
+1. 为什么上面代码矩阵ret赋值方式是一个4行2列的矩阵？
 
-这个矩阵是用于表示约束对输入的导数，即每一行对应一个约束，每一列对应一个输入分量。因为约束的形式是：
+这个矩阵是用于表示约束对输入的导数，即**每一行对应一个约束**，**每一列对应一个输入分量**。因为约束的形式是：
 
 ```
 input(0) + limit <= 0
@@ -563,7 +659,9 @@ input(1) + limit <= 0
 
 这就是为什么这个矩阵是这样赋值的。
 
+==总结：行数代表约束个数，列数代表输入量个数或状态量个数==
 
+如果是状态量约束(stateConstraint)，则赋值给ret.dfds 输入量约束则赋值给ret.dfdu
 
 
 
@@ -719,7 +817,7 @@ mpcMrtInterface_->evaluatePolicy(currentObservation_.time, currentObservation_.s
 
 #### TargetTrajectoriesPublisher
 
-> TargetTrajectoriesPublisher.cpp订阅Controoler发布的的观测数据，获取==cmd_vel==结合状态并使用TargetTrajectoriesRosPublisher类发布预测数据
+> TargetTrajectoriesPublisher.cpp订阅Controller发布的的观测数据，获取==cmd_vel==结合状态并使用TargetTrajectoriesRosPublisher类发布预测数据
 
 ```c++
 TargetTrajectoriesRosPublisher类是一个继承自TargetTrajectoriesPublisher类的子类，它是用来将ocs2的目标轨迹转换为ROS消息，并通过ROS话题发送给ocs2的MPC控制器的。它的话题名称由构造函数中的topicPrefix参数决定，一般是机器人的名字加上"_target_trajectories"。它的话题被ocs2的MPC控制器订阅，用来接收目标轨迹，并根据它们计算最优控制策略。
@@ -752,9 +850,9 @@ TargetTrajectoriesROSPublisher类的构造函数接受一个话题前缀参数�
 
 #### RosReferenceManager
 
-> 订阅者通常和mpc一起工作，在控制器中我们读取传感器获取了当前观测值并发布，预测者订阅观测者发布的数据结合命令生成和发布预测值，RosReferenceManager就会订阅并将值给予mpc
+> 订阅者通常和mpc一起工作，在控制器中我们读取传感器获取了当前观测值并发布，预测者==订阅观测者发布的数据结合命令生成和发布预测值==，RosReferenceManager就会订阅并将值给予mpc
 
-RosReferenceManager类是一个用来管理ocs2的模式序列和目标轨迹的类，它是一个装饰器，给ReferenceManager类添加了ROS订阅器，用来接收ROS消息。它的作用是将收到的ocs2_msgs::ModeSchedule和ocs2_msgs::TargetTrajectories类型的消息转换为ocs2::ModeSchedule和ocs2::TargetTrajectories类型，并存储在ReferenceManager类的成员变量中。然后，ocs2的MPC控制器可以通过ReferenceManager类的接口，来获取最新的模式序列和目标轨迹，并根据它们计算最优控制策略。
+RosReferenceManager类是一个用来管理ocs2的模式序列和目标轨迹的类，它是一个装饰器，给ReferenceManager类添加了ROS订阅器，用来接收ROS消息。它的作用是将收到的ocs2_msgs::ModeSchedule和ocs2_msgs::TargetTrajectories类型的消息转换为ocs2::ModeSchedule和ocs2::TargetTrajectories类型，并存储在ReferenceManager类的成员变量中。然后，ocs2的MPC控制器可以通过ReferenceManager类的接口，来==获取最新的模式序列和目标轨迹==，并根据它们计算最优控制策略。
 
 ```c++
 /**
@@ -949,3 +1047,17 @@ problem_.stateInequalityConstraintPtr->add("pitchConstraint", std::make_unique<P
 ### 更新部分
 
  
+
+
+
+# 调试问题
+
+## Permission denied
+
+> 当载入控制器时，报错：
+>
+> ```c
+> /rm_hw: boost::filesystem::create_directory: Permission denied: "/tmp/rm/PowerLimit/cppad
+> ```
+
+重新编译都没有，su权限下删除/tmp/rm就好了，运行时会再生成一次

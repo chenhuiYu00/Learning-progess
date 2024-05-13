@@ -726,7 +726,7 @@ hardware_interface::ActuatorStateInterface act_state_interface_;
 ```c
   transmission_interface::ActuatorToJointStateInterface *act_to_jnt_state_{};
   transmission_interface::JointToActuatorPositionInterface
-      *jnt_to_act_effort_{};
+      *jnt_to_act_effort_{};//这里的类型是joint-》positon，执行器类型是位置(舵机)，如果是力控执行器那就是effort
 
 //转换关系已经完成了，但是我们需要手动获取
   act_to_jnt_state_ =
@@ -1306,3 +1306,11 @@ catkin clean一下即可
 > 程序跑着跑着停了，debug后发现是main函数里的while(ros::ok())过不去
 
 发现是`ros::Rate loop_rate(50);`和我read()和write()的频率没对上，改对后正常
+
+
+
+### effort_actutor_cmd[0]显示nan
+
+经过`nt_to_act_effort_interface_->propagate();`的转换后，存储命令的数组报nan
+
+原因不知道，可能是在转换前没有在控制器里给jont efoort设置命令，也可能和注册actuator handle和effort actutar  handle顺序有关？

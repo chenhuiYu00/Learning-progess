@@ -8,6 +8,10 @@
 
 
 
+[ROS wiki-如何写xml](http://wiki.ros.org/urdf/XML)
+
+
+
 ## Fusion360
 
 > 我们需要在fusion中获取模型零部件的属性填入之后的urdf中，选中所需要的零部件右键属性后可以分析出物理数据
@@ -150,6 +154,146 @@ gazebo中需要检查质心位置，模型位置
 ### 检查碰撞箱
 
 勾选  **View | collision**  检查碰撞箱是否基本将模型包裹住。
+
+
+
+### 并联机构
+
+> URDF不支持并联机构，我们可以综合运用gazebo自己的joint来实现并联
+>
+> https://github.com/2b-t/closed_loop
+>
+> https://github.com/PR2/pr2_common/blob/melodic-devel/pr2_description/urdf/gripper_v0/gripper.gazebo.xacro
+
+```urdf
+<gazebo>
+    <joint name="right_connect_joint" type="revolute">
+        <parent>right_front_second_leg</parent>
+        <child>right_back_second_leg</child>
+        <axis>
+            <xyz>0 1 0</xyz>
+            <dynamics> (这一段也许会影响运行可以去掉)
+                <damping>0.01</damping>
+            </dynamics>
+        </axis>
+        <pose>$0 0 0 0 0 0</pose> (x y z r p y)
+    </joint>
+</gazebo>
+```
+
+
+
+##  为模型添加纹理
+
+> https://answers.gazebosim.org//question/4761/how-to-build-a-world-with-real-image-as-ground-plane/
+
+You can create a material script, and then use that material script on a ground plane.
+
+1. Create a new model directory:
+
+   mkdir ~/.gazebo/models/my_ground_plane
+
+2. Create the materials directories:
+
+   mdkir -p ~/.gazebo/models/my_ground_plane/materials/textures mdkir -p ~/.gazebo/models/my_ground_plane/materials/scripts
+
+3. Create your material script file `~/.gazebo/models/my_ground_plane/materials/scripts/my_ground_plane.material` with the following contents:
+
+```
+    material MyGroundPlane/Image
+    {
+      technique
+      {
+        pass
+        {
+          ambient 0.5 0.5 0.5 1.0
+          diffuse 1.0 1.0 1.0 1.0
+          specular 0.0 0.0 0.0 1.0 0.5
+
+          texture_unit
+          {
+            texture MyImage.png
+            filtering trilinear
+          }
+        }
+      }
+    }
+```
+
+1. Copy your image to `~/.gazebo/models/my_ground_plane/materials/textures/MyImage.png`
+
+2. Create a `~/.gazebo/models/my_ground_plane/model.sdf` file with the following contents
+
+   ```
+   <?xml version="1.0"?>
+   <sdf version="1.4">
+   <model name="my_ground_plane">
+     <static>true</static>
+       <link name="link">
+         <collision name="collision">
+           <geometry>
+             <plane>
+               <normal>0 0 1</normal>
+               <size>100 100</size>
+             </plane>
+           </geometry>
+           <surface>
+             <friction>
+               <ode>
+                 <mu>100</mu>
+                 <mu2>50</mu2>
+               </ode>
+             </friction>
+           </surface>
+         </collision>
+         <visual name="visual">
+           <cast_shadows>false</cast_shadows>
+           <geometry>
+             <plane>
+               <normal>0 0 1</normal>
+               <size>100 100</size>
+             </plane>
+           </geometry>
+           <material>
+             <script>
+               <uri>model://my_ground_plane/materials/scripts/my_ground_plane.material</uri>
+               <name>MyGroundPlane/Image</name>
+             </script>
+           </material>
+         </visual>
+       </link>
+     </model>
+   </sdf>
+   ```
+
+3. Create a `~/.gazebo/models/my_ground_plane/model.config` file with the following contents
+
+
+   <model> <name>My Ground Plane</name> <version>1.0</version> <sdf version="1.4">model.sdf</sdf>
+
+   ```
+   <description>
+     My textured ground plane.
+   </description>
+   ```
+
+   </model>
+
+4. In your world SDF file, use your ground plane like so:
+
+   ```
+   <include>
+     <uri>model://my_ground_plane</uri>
+   </include>
+   ```
+
+
+
+
+
+## 注意点
+
+- 如果碰撞箱给大小为0,则会导致stl文件显示不出来
 
 
 

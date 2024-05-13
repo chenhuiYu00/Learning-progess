@@ -1567,13 +1567,13 @@ x内的元素顺序和 LM = LagrangesMethod(L,[q,phi,theta,x_b_l,x_b_r],...) 设
 
 > [`sympy.physics.mechanics`](https://docs.sympy.org/latest/modules/physics/mechanics/index.html#module-sympy.physics.mechanics)提供推导运动方程的功能[拉格朗日的方法](https://en.wikipedia.org/wiki/Lagrangian_mechanics)。本文件将描述拉格朗日的方法，但不是如何实际推导方程。
 >
-> [链接](https://docs.sympy.org/latest/modules/physics/mechanics/lagrange.html?highlight=lagrange)
+> 0[链接](https://docs.sympy.org/latest/modules/physics/mechanics/lagrange.html?highlight=lagrange)
 
 **方程结构**
 
 
 
-
+[官方例子](https://docs.sympy.org/latest/modules/physics/mechanics/examples.html)
 
 #### 分析倒立摆
 

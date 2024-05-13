@@ -891,6 +891,41 @@ enum CursorShape {
 
 
 
+#### 鼠标划过变色
+
+当要设置QPushbutton按钮背景，字体颜色，鼠标滑过状态，鼠标单击后状态时，可以用QSS来设置，具体的代码如下：
+
+```c++
+QPushButton *allSelect = new QPushButton;
+allSelect->setStyleSheet("QPushButton{border-image: url(:/1.png) 0 0 0 0;border:none;color:rgb(255, 255, 255);}"
+                        "QPushButton:hover{background-color: rgb(20, 62, 134);border:none;color:rgb(255, 255, 255);}"
+                        "QPushButton:checked{background-color: rgb(20, 62, 134);border:none;color:rgb(255, 255, 255);}");
+```
+
+
+另一种设置按钮图标显示。下面代码功能是在一个按钮内显示图标和文字，效果为左图标，右文字。当鼠标滑过时图标切换为另一个图标。当点击鼠标后又切换到另一个图标。具体代码如下：
+
+    QPushButton *readyRecoveryBtn = new QPushButton("str");
+    readyRecoveryBtn->setFixedSize(QSize(95,20));
+    readyRecoveryBtn->setStyleSheet("QPushButton{background-image: url(:res/1.png);background-repeat: no-repeat;background-position:left;border:none;color:white;}"
+                                "QPushButton:hover{background-image: url(:res/1.png);background-repeat: no-repeat;background-position:left;border:none;color:rgb(255, 255, 255);}"
+                                "QPushButton:pressed{background-image: url(:res/1.png);background-repeat: no-repeat;background-position:left;border:none;color:rgb(255, 255, 255);}");
+
+
+
+我使用的是：
+
+```c++
+   ui->toolButton->setStyleSheet(/*"QToolButton{border-image: url(:/1.png) 0 0 0 0;border:none;color:rgb(255, 255, 255);}"*/
+                                    "QToolButton{background-color: qlineargradient(spread:pad, x1:0.610949, y1:1, x2:0.445744, y2:0, stop:0 rgba(224, 13, 31, 255), stop:1 rgba(254, 177, 172, 255));border:0px groove gray;border-radius:15px;}"
+                                    "QToolButton:hover{background-color: qlineargradient(spread:pad, x1:0.610949, y1:1, x2:0.445744, y2:0, stop:0 rgba(255, 0, 9, 255), stop:1 rgba(254, 177, 172, 255));border:0px groove gray;border-radius:15px;}"
+                                    /*"QToolButton:checked{background-color: rgb(20, 62, 134);border:0px groove gray;border-radius:15px;}"*/);
+```
+
+
+
+
+
 ### 添加音效
 
 ![2022-08-22 22-53-23 的屏幕截图](1_Qt.assets/2022-08-22 22-53-23 的屏幕截图.png)
@@ -1498,3 +1533,139 @@ void KeyboardButton::readMouseState() {
 读取键盘文件的速度太慢了，加一个线程
 
 > [链接](https://blog.csdn.net/zong596568821xp/article/details/78893360)
+
+
+
+
+
+## 双滑块三色条
+
+> 记录三个颜色的比例，然后更新
+
+### 三色直线
+
+```c++
+void ColorProgressBar::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+
+    QPainter painter(this); // 创建 QPainter 对象，指定 this 为绘图设备
+    QPen pen; // 创建 QPen 对象
+    pen.setWidth(10); // 设置 QPen 的宽度为 10 像素
+    pen.setStyle(Qt::SolidLine); // 设置 QPen 的样式为实线
+    pen.setColor(Qt::green); // 设置 QPen 的颜色为绿色
+    painter.setPen(pen); // 将 QPen 应用到 QPainter 上
+    painter.drawLine(startPosX_, startPosY_, startPosX_+realWidth_*greenScale_, startPosY_); // 画一段红色直线
+    pen.setColor(Qt::yellow); // 设置 QPen 的颜色为黄色
+    painter.setPen(pen); // 将 QPen 应用到 QPainter 上
+    painter.drawLine(startPosX_+realWidth_*greenScale_,startPosY_, startPosX_+realWidth_*(greenScale_+yellowScale_), startPosY_); // 画一段绿色直线
+    pen.setColor(Qt::red); // 设置 QPen 的颜色为红色
+    painter.setPen(pen); // 将 QPen 应用到 QPainter 上
+    painter.drawLine(startPosX_+realWidth_*(greenScale_+yellowScale_),startPosY_, startPosX_+realWidth_*(greenScale_+yellowScale_+redScale_), startPosY_); // 画一段黄色直线
+}
+```
+
+
+
+
+
+### 更新按钮位置
+
+> 因为进入按钮后会聚焦在按钮，更新位置时获取的按钮坐标系下的位置，所以先设置透明后，判断点击范围在不在按钮内来触发
+
+```c++
+ui->toolButton_left->setAttribute(Qt::WA_TransparentForMouseEvents, true); //设置透明，按钮不会响应鼠标事件
+
+
+
+判断是不是在范围内(替代clicked的功能)
+void MyWidget::mousePressEvent(QMouseEvent *event)
+{
+    // 在子控件中处理鼠标事件
+    // ...
+    // 将鼠标事件加入到父控件的事件队列中
+    QCoreApplication::postEvent(this->parentWidget(), new QMouseEvent(*event));
+}
+
+void MyParentWidget::mousePressEvent(QMouseEvent *event)
+{
+    // 判断鼠标点击的位置是否在子控件的范围内
+    if (w->geometry().contains(event->pos()))
+    {
+        // 调用子控件的 mousePressEvent 方法
+        w->mousePressEvent(event);
+    }
+    else
+    {
+        // 在父控件中处理鼠标事件
+        // ...
+    }
+}
+```
+
+
+
+
+
+## 交通灯系统
+
+### 仅获取时间/日期
+
+```c++
+// 获取当前时间
+QTime currentTime = QTime::currentTime();
+// 获取当前日期
+QDate currentDate = QDate::currentDate();
+```
+
+
+
+### 修改QlistWidgetitem
+
+#### 进入后的颜色
+
+```c++
+// 创建一个QListWidget对象
+QListWidget *listWidget = new QListWidget;
+// 创建三个QListWidgetItem对象，分别显示"Apple"、"Banana"和"Cherry"
+QListWidgetItem *item1 = new QListWidgetItem("Apple");
+QListWidgetItem *item2 = new QListWidgetItem("Banana");
+QListWidgetItem *item3 = new QListWidgetItem("Cherry");
+// 将QListWidgetItem对象添加到QListWidget对象中
+listWidget->addItem(item1);
+listWidget->addItem(item2);
+listWidget->addItem(item3);
+// 使用QListWidget的setStyleSheet函数，设置QListWidget的样式
+listWidget->setStyleSheet("QListWidget::item:hover { background-color: red; }");
+```
+
+#### 隐藏滑块/滑块样式
+
+```c++
+    ui->snap_list_widget->setStyleSheet("QListWidget::item:hover { background-color: rgba(238,238,236,0.3);}");
+    ui->snap_list_widget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->snap_list_widget->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+```
+
+```c++
+// 创建一个QListWidget对象
+QListWidget *listWidget = new QListWidget;
+// 获取QListWidget的垂直滚动条对象
+QScrollBar *scrollBar = listWidget->verticalScrollBar();
+// 设置滚动条的样式表
+scrollBar->setStyleSheet("QScrollBar { background-color: gray; border: 1px solid black; width: 10px; }");
+```
+
+
+
+#### 像素滚动而不是项目滚动
+
+```c++
+// 创建一个QListWidget对象
+QListWidget *listWidget = new QListWidget;
+// 设置QListWidget的垂直滚动模式为像素滚动
+listWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+```
+
+
+
