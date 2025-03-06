@@ -1669,3 +1669,46 @@ listWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
 
 
+
+
+## YahBoom机械臂项目
+
+> 使用机械臂与电脑通信，机械臂使用TCP传输视频给电脑，电脑识别结果发回机械臂，机械臂执行
+
+
+
+### 环境加入opencv，tcp
+
+>  Network是Qt下的库，opencv是独立库要额外find package
+
+```cmake
+find_package(Qt5 COMPONENTS
+        Widgets
+        Network
+        REQUIRED)
+
+find_package(OpenCV REQUIRED)
+
+add_executable(tcpTest
+        src/utils/tcptestnode.cpp
+        )
+
+target_link_libraries(tcpTest PRIVATE
+        Qt5::Widgets
+        Qt5::Network
+        ${OpenCV_LIBS}
+        )
+```
+
+### 自适应窗口
+
+如果想让窗口在布局后不要被挤到一条，在属性里设置最小大小，这样就有一个保底大小
+
+![2024-12-31 11-15-19 的屏幕截图](images/1_Qt/2024-12-31 11-15-19 的屏幕截图.png)
+
+
+
+
+
+###  TCP传输视频
+
