@@ -12,7 +12,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="78b6899f-15a2-4b39-9fd1-757fa2b76ea4" name="Changes" comment="" />
+    <list default="true" id="78b6899f-15a2-4b39-9fd1-757fa2b76ea4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/master/机器人学/机器人动力学推导Sympy/安装Sympy.md" beforeDir="false" afterPath="$PROJECT_DIR$/master/机器人学/机器人动力学推导Sympy/安装Sympy.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -58,6 +61,8 @@
       <workItem from="1679487895790" duration="481000" />
       <workItem from="1681403347484" duration="116000" />
       <workItem from="1690187102732" duration="34000" />
+      <workItem from="1741269634658" duration="1164000" />
+      <workItem from="1741270829996" duration="1781000" />
     </task>
     <task id="LOCAL-00001" summary="Recent all files.">
       <created>1668160073718</created>
@@ -115,7 +120,14 @@
       <option name="project" value="LOCAL" />
       <updated>1690187115694</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Update and add some files.">
+      <created>1741269674262</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1741269674262</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

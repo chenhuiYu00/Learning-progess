@@ -1723,7 +1723,7 @@ r, m, g = symbols('r m g')
 
 ```c
 N = ReferenceFrame('N')
-Y = N.orientnew('Y', 'Axis', [q1, N.z])
+Y = N.orientnew('Y', 'Axis', [q1, N.z]) //圆盘的中轴是y轴
 L = Y.orientnew('L', 'Axis', [q2, Y.x])
 R = L.orientnew('R', 'Axis', [q3, L.y])
 ```
