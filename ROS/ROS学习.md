@@ -4,7 +4,7 @@
 
 > https://blog.csdn.net/AFATAR/article/details/107453318
 
-
+ 
 
 # 自查
 
@@ -506,3 +506,4 @@ fcntl.h的更多用法 [链接](https://blog.csdn.net/qintaiwu/article/details/7
     }
 ```
 
+k

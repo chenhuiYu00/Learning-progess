@@ -1796,6 +1796,64 @@ Matrix([
 
 
 
+#### 分析ballbot
+
+> 来自于文献[1](https://www.researchgate.net/publication/259602161_Modeling_and_Control_of_a_Ballbot?enrichId=rgreq-323d016cc585c93823047dbe8cb7dfe5-XXX&enrichSource=Y292ZXJQYWdlOzI1OTYwMjE2MTtBUzo5NzI2NTc2NzE1Nzc2NEAxNDAwMjAxMzc0MjE0&el=1_x_3&_esc=publicationCoverPdf)
+>
+> α 阿尔法， β 贝塔， γ 伽玛，δ 德尔塔， ε 伊普西隆， ζ 泽塔， η 伊塔， θ 西塔， ι 约塔， κ 卡帕， λ 兰姆达，μ 米欧 ，ν 纽， ξ 克西， ο 欧米克隆， π 派， ρ 柔 ，σ 西格玛， τ 陶 ，υ 玉普西隆， φ 弗爱， χ 凯， ψ 普赛
+>
+> A是机体，K是球，W是轮子
+
+
+
+文献提供了两种方法，投影法和整体法，这里分析整体法
+
+有5个广义坐标：[θx,θy,θz,φx,φy]^T分别表示机体IMU读到的roll，pitch，yaw，底部球x，y轴方向滚动角度
+
+
+
+- 广义速度：式子4.3定义了机体角速度的求解方法，如果要求底部球角速度，需要参考附录D利用驱动轮速度进行反解，
+
+
+
+![2025-04-14 17-18-00 的屏幕截图](images/安装Sympy/2025-04-14 17-18-00 的屏幕截图.png)
+
+
+
+- 求广义力所需要的JT的J矩阵，要用广义速度求解对应的驱动轮速度，式4.6下面AΩw2即驱动轮2的角速度：
+
+![image-20250414172157512](images/安装Sympy/image-20250414172157512.png)
+
+P89是利用用全向轮轮速psi求球自身旋转速度phi
+
+![image-20250414185058257](images/安装Sympy/image-20250414185058257.png)
+
+P90是计算得到最终球在世界坐标系下速度[dx，dy，0]
+
+![image-20250414185359557](images/安装Sympy/image-20250414185359557.png)
+
+P93是利用广义坐标求驱动轮转速
+
+![image-20250414192210114](images/安装Sympy/image-20250414192210114.png)
+
+其中等式右边的A_OmegaWi是编码器读数
+
+![image-20250414192421084](images/安装Sympy/image-20250414192421084.png)
+
+
+
+
+
+- 计算动力学方程里的F矩阵，其需要AΩw1,2,3拆解出来的矩阵J和4.3获得的反作用力矩阵JTc，Tci是反作用力矩。
+
+![image-20250414175401018](images/安装Sympy/image-20250414175401018.png)
+
+
+
+
+
+
+
 #### 其他例子
 
 > https://python.hotexamples.com/examples/sympy.physics.mechanics/LagrangesMethod/form_lagranges_equations/python-lagrangesmethod-form_lagranges_equations-method-examples.html
